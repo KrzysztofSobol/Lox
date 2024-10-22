@@ -1,34 +1,27 @@
-import customtkinter as ctk
-from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer
+import subprocess
+import sys
 
-class PasswordManager(App):
-    """A Textual app to manage stopwatches."""
+def read_mode_from_file():
+    try:
+        with open('mode.txt', 'r') as file:
+            mode = file.read().strip().lower()
+        return mode == 'true'
+    except FileNotFoundError:
+        print("mode.txt not found. Defaulting to GUI mode.")
+        return True
+    except Exception as e:
+        print(f"Error reading mode.txt: {e}. Defaulting to GUI mode.")
+        return True
 
-    BINDINGS = [("d", "toggle_dark", "Toggle dark mode")]
+def main():
+    is_gui_mode = read_mode_from_file()
 
-    def compose(self) -> ComposeResult:
-        """Create child widgets for the app."""
-        yield Header()
-        yield Footer()
-
-    def action_toggle_dark(self) -> None:
-        """An action to toggle dark mode."""
-        self.dark = not self.dark
-
+    if is_gui_mode:
+        # Launch gui_app.py using pythonw (no console)
+        subprocess.run(['pythonw', 'gui_app.py'])
+    else:
+        # Launch console_app.py using python (with console)
+        subprocess.run(['python', 'console_app.py'])
 
 if __name__ == "__main__":
-    isGUI = True
-    with open('boolean.txt', 'r') as file:
-        isGUI = file.read().strip()
-    isGUI = True if isGUI == "True" else False
-
-    if(isGUI):
-        appGUI = ctk.CTk()
-        appGUI.geometry("720x480")
-        appGUI.title("PasswordManager")
-        appGUI.resizable(False, False)
-        appGUI.mainloop()
-    else:
-        appText = PasswordManager()
-        appText.run()
+    main()
