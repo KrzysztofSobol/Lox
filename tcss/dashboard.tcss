@@ -1,0 +1,31 @@
+#app-grid {
+    layout: horizontal;
+}
+
+#left-pane > Static {
+    background: $boost;
+    color: auto;
+    margin-bottom: 1;
+    padding: 1;
+}
+
+#left-pane {
+    width: 30%;
+    height: 100%;
+    background: $panel;
+    border: dodgerblue;
+}
+
+#right-pane {
+    width: 70%;
+    height: 100%;
+    background: $panel;
+    border: dodgerblue;
+}
+
+#right-pane  > Static {
+    background: $boost;
+    color: auto;
+    margin-bottom: 1;
+    padding: 1;
+}

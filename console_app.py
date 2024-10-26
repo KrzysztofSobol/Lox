@@ -6,7 +6,7 @@ from models.app_state import AppState
 class ModesApp(App):
     BINDINGS = [
         ("ctrl+d", "switch_screen('dashboard')", "Dashboard"),
-        ("ctrl+h", "switch_screen('help')", "Help"),
+        ("h", "switch_screen('help')", "Help"),
     ]
 
     def __init__(self):

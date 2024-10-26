@@ -1,0 +1,31 @@
+Screen {
+    align: center middle;
+}
+
+#login-container {
+    width: 40;
+    height: auto;
+    border: #004578;
+    padding: 1;
+}
+
+#hello {
+    width: auto;
+    content-align: center middle;
+}
+
+Input {
+    margin: 1 0;
+    width: 100%;
+}
+
+Button {
+    margin: 1 0;
+    width: 100%;
+}
+
+#lock {
+    align: center middle;
+    width: auto;
+    color: white;
+}

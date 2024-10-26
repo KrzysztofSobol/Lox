@@ -1,0 +1,27 @@
+#cat {
+    color: white; /* Default color */
+}
+
+.red {
+    color: red;
+}
+
+.green {
+    color: green;
+}
+
+.yellow {
+    color: yellow;
+}
+
+.blue {
+    color: blue;
+}
+
+.magenta {
+    color: magenta;
+}
+
+.cyan {
+    color: cyan;
+}
