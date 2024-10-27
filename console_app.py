@@ -1,7 +1,8 @@
 # main.py
 from textual.app import App
-from controllers.screen_controller import ScreenController
-from models.app_state import AppState
+from controllers.ScreenController import ScreenController
+from models.AppState import AppState
+from database.database import init_db
 
 class ModesApp(App):
     BINDINGS = [
