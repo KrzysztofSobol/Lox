@@ -6,8 +6,8 @@ class UserController:
     def __init__(self, userRepository: UserRepository):
         self.userRepository = userRepository
 
-    def create_user(self, username: str, password: str):
-        if len(password) >= 8:
+    def create_user(self, username: str, password: str, confirmPassword: str):
+        if len(password) >= 5:
             existing_user = self.userRepository.get_user_by_username(username)
             if existing_user:
                 return False
