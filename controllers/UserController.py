@@ -1,6 +1,5 @@
 # UserController.py
 import hashlib
-
 from repositories.UserRepository import UserRepository
 
 

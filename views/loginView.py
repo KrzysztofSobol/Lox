@@ -23,7 +23,9 @@ class LockDisplay(Static):
     animation_frame = reactive(0)  # current animation frame
 
     def render(self) -> str:
-        normal_lock = """             
+        normal_lock = """     
+        
+                
                +@@@@@@@+
              %@@@@@@@@@@@%
             @@@@:     .@@@@
@@ -38,11 +40,12 @@ class LockDisplay(Static):
          @@@@@@@@@@+@@@@@@@@@@
          @@@@@@@@@@=@@@@@@@@@@
          #@@@@@@@@@@@@@@@@@@@#
-         
-         
                 """
 
-        error_lock = """             
+        error_frames = [
+            """      
+        
+               
                +@@@@@@@+
              %@@@@@@@@@@@%
             @@@@:     .@@@@
@@ -57,12 +60,67 @@ class LockDisplay(Static):
          @@@@@  @@@@@@@  @@@@@
          @@@@@@@@@@@@@@@@@@@@@
          #@@@@@@@@@@@@@@@@@@@#
-         
-         
+                """,
+            """      
+        
+               
+               +@@@@@@@+
+             %@@@@@@@@@@@%
+            @@@@:     .@@@@
+           @@@@         @@@@
+           @@@*         +@@@
+           @@@#         *@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@  @@@@@  @@@@@@@
+         @@@@@@@@@  @  @@@@@@@
+         @@@@@@@@   @@@@@@@@@@
+         @@@@@@@@  @@@  @@@@@@
+         @@@@  @@@@@@@  @@@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         #@@@@@@@@@@@@@@@@@@@#
+                """,
+            """      
+        
+               
+               +@@@@@@@+
+             %@@@@@@@@@@@%
+            @@@@:     .@@@@
+           @@@@         @@@@
+           @@@*         +@@@
+           @@@#         *@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@  @@@@@@  @@@@@@
+         @@@@@@@@@@@  @  @@@@@
+         @@@@@@@   @@@@@@@@@@@
+         @@@@@@@  @@@  @@@@@@@
+         @@@@  @@@@@@@@@  @@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         #@@@@@@@@@@@@@@@@@@@#
+                """,
+            """      
+        
+               
+               +@@@@@@@+
+             %@@@@@@@@@@@%
+            @@@@:     .@@@@
+           @@@@         @@@@
+           @@@*         +@@@
+           @@@#         *@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@@  @@@@@  @@@@@@
+         @@@@@@@@  @  @@@@@@@@
+         @@@@@@@@@   @@@@@@@@@
+         @@@@@@@  @@@  @@@@@@@
+         @@@@@  @@@@@@@  @@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         #@@@@@@@@@@@@@@@@@@@#
                 """
+        ]
 
         success_frames = [
             """             
+            
+            
                +@@@@@@@+
              %@@@@@@@@@@@%
             @@@@:     .@@@@
@@ -77,10 +135,9 @@ class LockDisplay(Static):
          @@@@@@@@  @@@@@@@@@@@
          @@@@@@@@@@@@@@@@@@@@@
          #@@@@@@@@@@@@@@@@@@@#
-         
-         
                 """,
             """             
+            
                +@@@@@@@+
              %@@@@@@@@@@@%
             @@@@:     .@@@@
@@ -96,7 +153,6 @@ class LockDisplay(Static):
          @@@@@@@@  @@@@@@@@@@@
          @@@@@@@@@@@@@@@@@@@@@
          #@@@@@@@@@@@@@@@@@@@#
-         
                 """,
             """             
                +@@@@@@@+
@@ -121,14 +177,19 @@ class LockDisplay(Static):
         if self.display_state == "success":
             return f"[{self.color}]" + success_frames[self.animation_frame]
         elif self.display_state == "error":
-            return f"[{self.color}]" + error_lock
+            return f"[{self.color}]" + error_frames[self.animation_frame]
         else:
             return f"[{self.color}]" + normal_lock
 
     async def animateSuccess(self):
         for frame in range(3):
             self.animation_frame = frame
-            await asyncio.sleep(0.15)
+            await asyncio.sleep(0.07)
+
+    async def animateError(self):
+        for frame in range(4):
+            self.animation_frame = frame
+            await asyncio.sleep(0.05)
 
 
 class LoginView(Screen):
@@ -167,6 +228,15 @@ class LoginView(Screen):
         dashboard = DashboardView(user=user)
         self.app.push_screen(dashboard)
 
+    async def handle_error_login(self):
+        lock = self.query_one(LockDisplay)
+        lock.color = "red"
+        lock.display_state = "error"
+
+        # Run the animation
+        await lock.animateError()
+        await asyncio.sleep(0.5) # small break between changing the screen
+
     # button actions
     def on_button_pressed(self, event: Button.Pressed) -> None:
         lock = self.query_one(LockDisplay)
@@ -204,5 +274,4 @@ class LoginView(Screen):
             if user:
                 asyncio.create_task(self.handle_successful_login(user))
             else:
-                lock.color = "red"
-                lock.display_state = "error"
+                asyncio.create_task(self.handle_error_login())
