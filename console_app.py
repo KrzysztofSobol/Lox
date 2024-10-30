@@ -21,8 +21,6 @@ class ModesApp(App):
     def action_switch_screen(self, screen_name: str) -> None:
         if screen_name in self.SCREENS:
             self.push_screen(self.SCREENS[screen_name]())
-        else:
-            print(f"No screen registered under name: {screen_name}")
 
     def on_mount(self) -> None:
         self.action_switch_screen("login")

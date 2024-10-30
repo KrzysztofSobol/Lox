@@ -3,16 +3,15 @@ from textual.screen import Screen
 from textual.widgets import Footer, Static, Input, Button
 from textual.app import ComposeResult
 from textual.containers import Vertical, Horizontal
+import asyncio
 
 from controllers.UserController import UserController
 from database.database import init_db
 from repositories.UserRepository import UserRepository
 from views.dashboardView import DashboardView
 
-
 class LoginView:
     pass
-
 
 class LockDisplay(Static):
     SCREENS = {
@@ -20,9 +19,11 @@ class LockDisplay(Static):
     }
 
     color = reactive("white")
+    display_state = reactive("normal")  # Can be "normal", "error", "success"
+    animation_frame = reactive(0)  # current animation frame
 
     def render(self) -> str:
-        return f"[{self.color}]" + """             
+        normal_lock = """             
                +@@@@@@@+
              %@@@@@@@@@@@%
             @@@@:     .@@@@
@@ -37,7 +38,98 @@ class LockDisplay(Static):
          @@@@@@@@@@+@@@@@@@@@@
          @@@@@@@@@@=@@@@@@@@@@
          #@@@@@@@@@@@@@@@@@@@#
+         
+         
                 """
+
+        error_lock = """             
+               +@@@@@@@+
+             %@@@@@@@@@@@%
+            @@@@:     .@@@@
+           @@@@         @@@@
+           @@@*         +@@@
+           @@@#         *@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@@  @@@@@  @@@@@@
+         @@@@@@@@  @  @@@@@@@@
+         @@@@@@@@@   @@@@@@@@@
+         @@@@@@@  @@@  @@@@@@@
+         @@@@@  @@@@@@@  @@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         #@@@@@@@@@@@@@@@@@@@#
+         
+         
+                """
+
+        success_frames = [
+            """             
+               +@@@@@@@+
+             %@@@@@@@@@@@%
+            @@@@:     .@@@@
+           @@@@         @@@@
+           @@@*         +@@@
+           @@@#         *@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@@@@@@@@@@  @@@@@
+         @@@@@  @@@@@  @@@@@@@
+         @@@@@@@  @  @@@@@@@@@
+         @@@@@@@@  @@@@@@@@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         #@@@@@@@@@@@@@@@@@@@#
+         
+         
+                """,
+            """             
+               +@@@@@@@+
+             %@@@@@@@@@@@%
+            @@@@:     .@@@@
+           @@@@         @@@@
+           @@@*         +@@@
+           @@@#         *@@@
+                         @@@ 
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@@@@@@@@@@  @@@@@
+         @@@@@  @@@@@  @@@@@@@
+         @@@@@@@  @  @@@@@@@@@
+         @@@@@@@@  @@@@@@@@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         #@@@@@@@@@@@@@@@@@@@#
+         
+                """,
+            """             
+               +@@@@@@@+
+             %@@@@@@@@@@@%
+            @@@@:     .@@@@
+           @@@@         @@@@
+           @@@*         +@@@
+           @@@#         *@@@
+                         @@@ 
+                         @@@ 
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@@@@@@@@@@  @@@@@
+         @@@@@  @@@@@  @@@@@@@
+         @@@@@@@  @  @@@@@@@@@
+         @@@@@@@@  @@@@@@@@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         #@@@@@@@@@@@@@@@@@@@#
+                """
+        ]
+
+        if self.display_state == "success":
+            return f"[{self.color}]" + success_frames[self.animation_frame]
+        elif self.display_state == "error":
+            return f"[{self.color}]" + error_lock
+        else:
+            return f"[{self.color}]" + normal_lock
+
+    async def animateSuccess(self):
+        for frame in range(3):
+            self.animation_frame = frame
+            await asyncio.sleep(0.15)
+
 
 class LoginView(Screen):
     color = reactive("white")
@@ -62,6 +154,20 @@ class LoginView(Screen):
                 yield Button("Go back", id="goToLogin-button")
         yield Footer()
 
+    async def handle_successful_login(self, user):
+        lock = self.query_one(LockDisplay)
+        lock.color = "#08f26e"
+        lock.display_state = "success"
+
+        # Run the animation
+        await lock.animateSuccess()
+        await asyncio.sleep(0.5) # small break between changing the screen
+
+        # Transition to dashboard
+        dashboard = DashboardView(user=user)
+        self.app.push_screen(dashboard)
+
+    # button actions
     def on_button_pressed(self, event: Button.Pressed) -> None:
         lock = self.query_one(LockDisplay)
         lrButton = self.query_one("#login-button")
@@ -69,6 +175,8 @@ class LoginView(Screen):
         # Logic for switching to register mode
         if event.button.id == "goToRegister-button":
             lock.color = "white"
+            lock.display_state = "normal"
+            lock.animation_frame = 0
             self.add_class("register")
             lrButton.label = "Register"
             self.query_one("#goToRegister-text").update(renderable="Go back to login?")
@@ -76,15 +184,14 @@ class LoginView(Screen):
         # Logic for returning to login mode
         elif event.button.id == "goToLogin-button":
             lock.color = "white"
+            lock.display_state = "normal"
+            lock.animation_frame = 0
             self.remove_class("register")
             lrButton.label = "Login"
             self.query_one("#goToRegister-text").update(renderable="Don't have an account?")
 
-
         elif event.button.id == "login-button":
-
             username = self.query_one("#login-input", Input).value
-
             password = self.query_one("#password-input", Input).value
 
             user = None
@@ -93,9 +200,9 @@ class LoginView(Screen):
             else:
                 confirmPassword = self.query_one("#confirmPassword-input", Input).value
                 user = self.userController.createUser(username, password, confirmPassword)
+
             if user:
-                lock.color = "green"
-                dashboard = DashboardView(user=user)
-                self.app.push_screen(dashboard)
+                asyncio.create_task(self.handle_successful_login(user))
             else:
                 lock.color = "red"
+                lock.display_state = "error"
