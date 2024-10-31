@@ -15,10 +15,11 @@
     align: center middle;
 }
 
-#button-pane > Button {
-    width: 1fr;
+#login-button3 {
+    height: auto;
     margin: 0;
-    max-width: 50%;
+    max-width: 20%;
+    dock: right;
 }
 
 #left-pane-list > Static {
