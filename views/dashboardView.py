@@ -3,13 +3,10 @@ from textual.containers import VerticalScroll, Vertical, Horizontal
 from textual.widgets import Static, Footer, Button, Input
 from textual.containers import Container as TextualContainer
 from textual.reactive import reactive
-from textual.message import Message
 from containerService.container import Container as ServiceContainer
 
 
 class WebsiteItem(Static):
-    """A widget representing a website item in the list."""
-
     def __init__(self, website, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.website = website
@@ -49,10 +46,12 @@ class DashboardView(Screen):
             with VerticalScroll(id="right-pane"):
                 with VerticalScroll(id="add-window"):
                     yield Input(placeholder="Url", id="url-input")
-                    yield Input(placeholder="Login", id="login-input")
-                    yield Input(placeholder="Password", id="password-input")
-                    yield Button("Add", id="add-button", variant="success")
-                    yield Button("Cancel", id="cancel-button", variant="error")
+                    with Horizontal(id="password-login-pane"):
+                        yield Input(placeholder="Login", id="login-input")
+                        yield Input(placeholder="Password", id="password-input")
+                    with Horizontal(id="add-cancel-pane"):
+                        yield Button("Cancel", id="cancel-button", variant="error")
+                        yield Button("Add", id="add-button", variant="success")
                 yield Static("Website details will appear here", id="website-details")
         yield Footer()
 
@@ -98,7 +97,6 @@ class DashboardView(Screen):
 
             if credential:
                 self.websites = self.website_controller.get_user_websites(self.user.id)
-
                 self.url = ""
                 self.login = ""
                 self.password = ""
