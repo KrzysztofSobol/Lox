@@ -9,7 +9,7 @@ from controllers.UserController import UserController
 from database.database import init_db
 from repositories.UserRepository import UserRepository
 from views.dashboardView import DashboardView
-from service.container import Container
+from containerService.container import Container
 
 class LoginView:
     pass
@@ -199,7 +199,7 @@ class LoginView(Screen):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.userController = Container.get_user_controller()
+        self.userController = Container.getUserController()
 
     def compose(self) -> ComposeResult:
         yield LockDisplay(id="lock")

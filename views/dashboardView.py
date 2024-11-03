@@ -2,16 +2,42 @@ from textual.app import Screen, ComposeResult
 from textual.containers import VerticalScroll, Vertical, Horizontal
 from textual.widgets import Static, Footer, Button, Input
 from textual.containers import Container as TextualContainer
-from service.container import Container as ServiceContainer
+from textual.reactive import reactive
+from textual.message import Message
+from containerService.container import Container as ServiceContainer
+
+
+class WebsiteItem(Static):
+    """A widget representing a website item in the list."""
+
+    def __init__(self, website, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.website = website
+        self.update_content()
+
+    def update_content(self):
+        self.update(f"{self.website.name}")
+
 
 class DashboardView(Screen):
     CSS_PATH = "../tcss/dashboard.tcss"
 
+    # Reactive variables
+    websites = reactive([])
+    selected_website = reactive(None)
+    url = reactive("")
+    login = reactive("")
+    password = reactive("")
+
     def __init__(self, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
-        self.website_controller = ServiceContainer.get_website_controller()
-        self.credential_controller = ServiceContainer.get_credential_controller()
+        self.website_controller = ServiceContainer.getWebsiteController()
+        self.credential_controller = ServiceContainer.getCredentialController()
+
+    def on_mount(self) -> None:
+        if self.user:
+            self.websites = self.website_controller.get_user_websites(self.user.id)
 
     def compose(self) -> ComposeResult:
         with TextualContainer(id="app-grid"):
@@ -19,10 +45,7 @@ class DashboardView(Screen):
                 with Horizontal(id="button-pane"):
                     yield Button("Add", id="add-website-button", variant="success")
                 with VerticalScroll(id="left-pane-list"):
-                    if self.user:
-                        websites = self.website_controller.get_user_websites(self.user.id)
-                        for website in websites:
-                            yield Static(f"{website.name}")
+                    pass
             with VerticalScroll(id="right-pane"):
                 with VerticalScroll(id="add-window"):
                     yield Input(placeholder="Url", id="url-input")
@@ -30,14 +53,66 @@ class DashboardView(Screen):
                     yield Input(placeholder="Password", id="password-input")
                     yield Button("Add", id="add-button", variant="success")
                     yield Button("Cancel", id="cancel-button", variant="error")
-                yield Static("Website details will appear here")
+                yield Static("Website details will appear here", id="website-details")
         yield Footer()
 
+    def watch_websites(self, websites: list) -> None:
+        container = self.query_one("#left-pane-list")
+        container.remove_children()
+        for website in websites:
+            container.mount(WebsiteItem(website))
+
+    def watch_selected_website(self, website) -> None:
+        if website:
+            self.query_one("#website-details").update(
+                f"URL: {website.url}\nLogin: {website.login}"
+            )
+        else:
+            self.query_one("#website-details").update("Website details will appear here")
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Handle input changes."""
+        if event.input.id == "url-input":
+            self.url = event.value
+        elif event.input.id == "login-input":
+            self.login = event.value
+        elif event.input.id == "password-input":
+            self.password = event.value
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button presses."""
         if event.button.id == "add-website-button":
             self.notify("Add website button pressed")
-        if event.button.id == "add-button":
-            url = self.query_one("#url-input", Input).value
-            login = self.query_one("#login-input", Input).value
-            password = self.query_one("#password-input", Input).value
-            credential = self.credential_controller.create_credential(self.user.id, url, login, password)
+
+        elif event.button.id == "add-button":
+            if not all([self.url, self.login, self.password]):
+                self.notify("Please fill in all fields", severity="error")
+                return
+
+            credential = self.credential_controller.create_credential(
+                self.user.id,
+                self.url,
+                self.login,
+                self.password
+            )
+
+            if credential:
+                self.websites = self.website_controller.get_user_websites(self.user.id)
+
+                self.url = ""
+                self.login = ""
+                self.password = ""
+                self.query_one("#url-input").value = ""
+                self.query_one("#login-input").value = ""
+                self.query_one("#password-input").value = ""
+                self.notify("Website added successfully!")
+            else:
+                self.notify("Failed to add website", severity="error")
+
+        elif event.button.id == "cancel-button":
+            self.url = ""
+            self.login = ""
+            self.password = ""
+            self.query_one("#url-input").value = ""
+            self.query_one("#login-input").value = ""
+            self.query_one("#password-input").value = ""

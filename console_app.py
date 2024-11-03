@@ -1,7 +1,7 @@
 from textual.app import App
 from views.dashboardView import DashboardView
 from views.loginView import LoginView
-from service.container import Container
+from containerService.container import Container
 
 class ModesApp(App):
     BINDINGS = [
