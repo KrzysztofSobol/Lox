@@ -9,6 +9,7 @@ from controllers.UserController import UserController
 from database.database import init_db
 from repositories.UserRepository import UserRepository
 from views.dashboardView import DashboardView
+from service.container import Container
 
 class LoginView:
     pass
@@ -198,9 +199,7 @@ class LoginView(Screen):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.conn = init_db()
-        self.userRepository = UserRepository(self.conn)
-        self.userController = UserController(self.userRepository)
+        self.userController = Container.get_user_controller()
 
     def compose(self) -> ComposeResult:
         yield LockDisplay(id="lock")
@@ -238,7 +237,7 @@ class LoginView(Screen):
         await asyncio.sleep(0.5) # small break between changing the screen
 
     # button actions
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    async def on_button_pressed(self, event: Button.Pressed) -> None:  # Make this async
         lock = self.query_one(LockDisplay)
         lrButton = self.query_one("#login-button")
 

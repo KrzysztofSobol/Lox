@@ -1,8 +1,8 @@
 from textual.app import Screen, ComposeResult
-from textual.containers import Container, VerticalScroll, Vertical, Horizontal
+from textual.containers import VerticalScroll, Vertical, Horizontal
 from textual.widgets import Static, Footer, Button, Input
-from repositories.WebsiteRepository import WebsiteRepository
-from controllers.WebsiteController import WebsiteController
+from textual.containers import Container as TextualContainer
+from service.container import Container as ServiceContainer
 
 class DashboardView(Screen):
     CSS_PATH = "../tcss/dashboard.tcss"
@@ -10,17 +10,17 @@ class DashboardView(Screen):
     def __init__(self, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
-        self.websiteRepository = WebsiteRepository()
-        self.websiteController = WebsiteController(self.websiteRepository)
+        self.website_controller = ServiceContainer.get_website_controller()
+        self.credential_controller = ServiceContainer.get_credential_controller()
 
     def compose(self) -> ComposeResult:
-        with Container(id="app-grid"):
+        with TextualContainer(id="app-grid"):
             with Vertical(id="left-pane"):
                 with Horizontal(id="button-pane"):
                     yield Button("Add", id="add-website-button", variant="success")
                 with VerticalScroll(id="left-pane-list"):
                     if self.user:
-                        websites = self.websiteController.get_user_websites(self.user.id)
+                        websites = self.website_controller.get_user_websites(self.user.id)
                         for website in websites:
                             yield Static(f"{website.name}")
             with VerticalScroll(id="right-pane"):
@@ -40,4 +40,4 @@ class DashboardView(Screen):
             url = self.query_one("#url-input", Input).value
             login = self.query_one("#login-input", Input).value
             password = self.query_one("#password-input", Input).value
-            credential = self.credentialController.createCredential(self, url, login ,password)
+            credential = self.credential_controller.create_credential(self.user.id, url, login, password)

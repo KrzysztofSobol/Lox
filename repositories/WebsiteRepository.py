@@ -2,11 +2,10 @@ import sqlite3
 from datetime import datetime
 from models.WebsiteModel import Website
 
-
 class WebsiteRepository:
-    def __init__(self):
-        self.conn = sqlite3.connect('password_manager.db')
-        self.cursor = self.conn.cursor()
+    def __init__(self, connection: sqlite3.Connection):
+        self.conn = connection
+        self.cursor = connection.cursor()
 
     def get_all_by_user_id(self, user_id: int) -> list[Website]:
         self.cursor.execute('''
@@ -22,7 +21,7 @@ class WebsiteRepository:
                 user_id=row[1],
                 name=row[2],
                 url=row[3],
-                created_at=datetime.now(),  # Since these aren't in DB yet
+                created_at=datetime.now(),
                 updated_at=datetime.now()
             )
             websites.append(website)

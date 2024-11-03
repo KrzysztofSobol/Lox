@@ -1,8 +1,7 @@
 from textual.app import App
-from textual.screen import Screen
-
 from views.dashboardView import DashboardView
 from views.loginView import LoginView
+from service.container import Container
 
 class ModesApp(App):
     BINDINGS = [
@@ -17,6 +16,7 @@ class ModesApp(App):
 
     def __init__(self):
         super().__init__()
+        Container.initialize()
 
     def action_switch_screen(self, screen_name: str) -> None:
         if screen_name in self.SCREENS:
