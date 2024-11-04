@@ -4,6 +4,7 @@ from textual.widgets import Static, Footer, Button, Input
 from textual.containers import Container as TextualContainer
 from textual.reactive import reactive
 from containerService.container import Container as ServiceContainer
+from views.addView import AddView
 
 
 class WebsiteItem(Static):
@@ -61,14 +62,6 @@ class DashboardView(Screen):
         for website in websites:
             container.mount(WebsiteItem(website))
 
-    def watch_selected_website(self, website) -> None:
-        if website:
-            self.query_one("#website-details").update(
-                f"URL: {website.url}\nLogin: {website.login}"
-            )
-        else:
-            self.query_one("#website-details").update("Website details will appear here")
-
     def on_input_changed(self, event: Input.Changed) -> None:
         """Handle input changes."""
         if event.input.id == "url-input":
@@ -81,7 +74,7 @@ class DashboardView(Screen):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button presses."""
         if event.button.id == "add-website-button":
-            self.notify("Add website button pressed")
+            self.app.push_screen("add_view")
 
         elif event.button.id == "add-button":
             if not all([self.url, self.login, self.password]):

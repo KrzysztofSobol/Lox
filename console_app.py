@@ -1,4 +1,6 @@
 from textual.app import App
+
+from views.addView import AddView
 from views.dashboardView import DashboardView
 from views.loginView import LoginView
 from containerService.container import Container
@@ -12,6 +14,7 @@ class ModesApp(App):
     SCREENS = {
         "login": LoginView,
         "dashboard": DashboardView,
+        "add_view": AddView
     }
 
     def __init__(self):
