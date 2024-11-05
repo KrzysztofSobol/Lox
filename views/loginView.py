@@ -236,6 +236,17 @@ class LoginView(Screen):
         await lock.animateError()
         await asyncio.sleep(0.5) # small break between changing the screen
 
+    def on_screen_resume(self) -> None:
+
+        self.query_one("#login-input", Input).value = ""
+        self.query_one("#password-input", Input).value = ""
+        self.query_one("#confirmPassword-input", Input).value = ""
+
+        lock = self.query_one(LockDisplay)
+        lock.color = "white"
+        lock.display_state = "normal"
+        lock.animation_frame = 0
+
     # button actions
     async def on_button_pressed(self, event: Button.Pressed) -> None:  # Make this async
         lock = self.query_one(LockDisplay)
