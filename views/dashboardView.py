@@ -10,10 +10,11 @@ class WebsiteItem(Static):
     def __init__(self, website, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.website = website
-        self.update_content()
 
-    def update_content(self):
-        self.update(f"{self.website.name}")
+    def compose(self) -> ComposeResult:
+        with Horizontal(id="website-pane"):
+            yield Static(f"{self.website.name}", id="website-name")
+            yield Button("Delete", id="Delete", variant="error")
 
 
 class DashboardView(Screen):
@@ -50,7 +51,6 @@ class DashboardView(Screen):
             container.mount(WebsiteItem(website))
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Handle button presses."""
         if event.button.id == "add-website-button":
             from views.addView import AddView
             add_view = AddView(user=self.user)
