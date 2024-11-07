@@ -5,7 +5,6 @@ from datetime import datetime
 from cryptography.fernet import Fernet
 from models.UserModel import User
 
-
 class UserRepository:
     def __init__(self, connection: sqlite3.Connection):
         self.conn = connection

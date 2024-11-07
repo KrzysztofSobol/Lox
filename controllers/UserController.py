@@ -2,7 +2,6 @@
 import hashlib
 from repositories.UserRepository import UserRepository
 
-
 class UserController:
     def __init__(self, userRepository: UserRepository):
         self.userRepository = userRepository
