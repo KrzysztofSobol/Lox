@@ -13,7 +13,8 @@ class WebsiteItem(Static):
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="website-pane"):
-            yield Static(f"{self.website.name}", id="website-name")
+            #yield Static(f"{self.website.name}", id="website-name")
+            yield Button(f"{self.website.name}", id="website-name", variant="default")
             yield Button("Delete", id="Delete", variant="error")
 
 
