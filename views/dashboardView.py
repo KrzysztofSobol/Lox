@@ -13,9 +13,8 @@ class WebsiteItem(Static):
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="website-pane"):
-            #yield Static(f"{self.website.name}", id="website-name")
             yield Button(f"{self.website.name}", id="website-name", variant="default")
-            yield Button("Delete", id="Delete", variant="error")
+            yield Button("Del", id="Delete", variant="error")
 
 
 class DashboardView(Screen):
@@ -51,11 +50,35 @@ class DashboardView(Screen):
         for website in websites:
             container.mount(WebsiteItem(website))
 
+    def display_credentials(self, website_id: int) -> None:
+        credentials = self.credential_controller.getCredentialsByWebsite(website_id)
+        details = self.query_one("#website-details")
+
+        if not credentials:
+            details.update("No credentials found for this website")
+            return
+
+        credential_text = "Stored Credentials:\n\n"
+        for cred in credentials:
+            credential_text += f"Username: {cred.username}\n"
+            credential_text += f"Password: {cred.encrypted_password}\n\n"
+
+        details.update(credential_text)
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "add-website-button":
             from views.addView import AddView
             add_view = AddView(user=self.user)
             self.app.push_screen(add_view)
+
+        else:
+            website_item = event.button.parent.parent
+            if isinstance(website_item, WebsiteItem):
+                if event.button.id == "website-name":
+                    self.selected_website = website_item.website
+                    self.display_credentials(self.selected_website.id)
+                elif event.button.id == "Delete":
+                    self.websites = [w for w in self.websites if w.id != website_item.website.id]
 
     def on_screen_resume(self) -> None:
         if self.user:
