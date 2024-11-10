@@ -1,10 +1,29 @@
 from textual.app import Screen, ComposeResult
 from textual.containers import VerticalScroll, Vertical, Horizontal
-from textual.widgets import Static, Footer, Button, Input, Switch
+from textual.widgets import Static, Footer, Button, Switch
 from textual.containers import Container as TextualContainer
 from textual.reactive import reactive
 from containerService.container import Container as ServiceContainer
 
+class CredentialItem(Static):
+    def __init__(self, username: str, password: str, savedLink: str, url: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.username = username
+        self.password = password
+        self.savedLink = savedLink
+        self.url = url
+
+    def compose(self) -> ComposeResult:
+        with Horizontal(classes="credential-row"):
+            with Vertical(classes="links-field"):
+                yield Static(f"Website: https://www.{self.url}", classes="link-label")
+                yield Static(f"Saved link: {self.savedLink}", classes="link-label")
+            with Horizontal(classes="credential-field"):
+                yield Static(f"Login: {self.username}", classes="credential-label")
+                yield Button("copy", classes="copy-button")
+            with Horizontal(classes="credential-field"):
+                yield Static(f"Password: {self.password}", classes="credential-label")
+                yield Button("copy", classes="copy-button")
 
 class WebsiteItem(Static):
     def __init__(self, website, *args, **kwargs):
@@ -38,7 +57,6 @@ class DashboardView(Screen):
     def on_mount(self) -> None:
         if self.user:
             self.websites = self.website_controller.get_user_websites(self.user.id)
-        # Hide delete toggles and confirmation button initially
         self.toggle_delete_mode(False)
 
     def compose(self) -> ComposeResult:
@@ -72,35 +90,28 @@ class DashboardView(Screen):
             container.mount(WebsiteItem(website))
         self.toggle_delete_mode(self.delete_mode)
 
-    def display_credentials(self, website_id: int) -> None:
+    def display_credentials(self, website_id: int, websiteName: str) -> None:
         credentials = self.credential_controller.getCredentialsByWebsite(website_id)
         details = self.query_one("#website-details")
+        details.remove_children()
 
         if not credentials:
-            details.update("No credentials found for this website")
+            details.mount(Static("No credentials found for this website"))
             return
 
-        credential_text = "Stored Credentials:\n\n"
         for cred in credentials:
-            credential_text += f"Username: {cred.username}\n"
-            credential_text += f"Password: {cred.encrypted_password}\n\n"
-
-        details.update(credential_text)
+            details.mount(CredentialItem(cred.username, cred.encrypted_password, cred.saved_link, websiteName))
 
     def delete_selected_websites(self) -> None:
-        # Get all selected websites
         to_delete = []
         for website_item in self.query(WebsiteItem):
             if website_item.to_delete:
                 to_delete.append(website_item.website.id)
 
-        # Delete from database
-        #for website_id in to_delete:
-            #self.website_controller.delete_website(website_id)
+        for website_id in to_delete:
+            self.website_controller.delete_website(website_id)
 
-        # Update UI
         self.websites = [w for w in self.websites if w.id not in to_delete]
-        # Exit delete mode
         self.toggle_delete_mode(False)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -116,7 +127,7 @@ class DashboardView(Screen):
             website_item = event.button.parent.parent
             if isinstance(website_item, WebsiteItem):
                 self.selected_website = website_item.website
-                self.display_credentials(self.selected_website.id)
+                self.display_credentials(self.selected_website.id, self.selected_website.url)
 
     def on_screen_resume(self) -> None:
         if self.user:

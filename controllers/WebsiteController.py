@@ -19,3 +19,6 @@ class WebsiteController:
             updated_at=datetime.now()
         )
         return self.websiteRepository.create(website)
+
+    def delete_website(self, website_id: int) -> bool:
+        return self.websiteRepository.delete(website_id)

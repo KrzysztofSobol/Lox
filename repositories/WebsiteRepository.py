@@ -38,5 +38,23 @@ class WebsiteRepository:
         website.id = self.cursor.lastrowid
         return website
 
+    def delete(self, website_id: int) -> bool:
+        try:
+            self.cursor.execute('''
+                DELETE FROM credentials 
+                WHERE website_id = ?
+            ''', (website_id,))
+
+            self.cursor.execute('''
+                DELETE FROM websites 
+                WHERE id = ?
+            ''', (website_id,))
+
+            self.conn.commit()
+            return True
+        except sqlite3.Error:
+            self.conn.rollback()
+            return False
+
     def __del__(self):
         self.conn.close()

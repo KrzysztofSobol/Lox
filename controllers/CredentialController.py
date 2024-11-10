@@ -20,12 +20,12 @@ class CredentialController:
                 url=normalized_url
             )
 
-        # Create credential
         credential = Credential(
             id=None,
             website_id=website.id,
             username=username,
             encrypted_password=password,
+            saved_link=url,
             notes=None,
             created_at=datetime.now(),
             updated_at=datetime.now()

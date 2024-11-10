@@ -34,6 +34,7 @@ def init_db():
             website_id INTEGER NOT NULL,
             username TEXT NOT NULL,
             encrypted_password TEXT NOT NULL,
+            saved_link TEXT NOT NULL,
             FOREIGN KEY (website_id) REFERENCES websites (id)
         )
     ''')

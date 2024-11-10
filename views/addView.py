@@ -31,16 +31,17 @@ class AddView(Screen):
             url = self.query_one("#url-input", Input).value
             login = self.query_one("#login-input-add", Input).value
             password = self.query_one("#password-input-add", Input).value
-            credential = self.credential_controller.create_credential(self.user.id, url, login, password)
 
             if not all([url, login, password]):
                 self.notify("Please fill in all fields", severity="error")
                 return
-            if credential:
-                self.notify("Website added successfully!")
-                self.app.pop_screen()
             else:
-                self.notify("Failed to add website", severity="error")
+                credential = self.credential_controller.create_credential(self.user.id, url, login, password)
+                if credential:
+                    self.notify("Website added successfully!")
+                    self.app.pop_screen()
+                else:
+                    self.notify("Failed to add website", severity="error")
 
         elif event.button.id == "cancel-button":
             self.app.pop_screen()
