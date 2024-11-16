@@ -33,6 +33,9 @@ class CredentialController:
 
         return self.credentialRepository.create(credential)
 
+    def delete(self, credential_id: int) -> bool:
+        return self.credentialRepository.delete(credential_id)
+
     def getCredentialsByWebsite(self, website_id: int) -> List[Credential]:
         return self.credentialRepository.get_all_by_website_id(website_id)
 

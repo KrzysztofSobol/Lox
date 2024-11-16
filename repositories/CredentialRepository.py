@@ -41,5 +41,16 @@ class CredentialRepository:
 
         return credentials
 
+    def delete(self, credential_id: int) -> bool:
+        try:
+            self.cursor.execute('''
+                DELETE FROM credentials 
+                WHERE id = ?
+            ''', (credential_id,))
+            self.conn.commit()
+            return True
+        except sqlite3.Error:
+            return False
+
     def __del__(self):
         self.conn.close()

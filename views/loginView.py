@@ -20,7 +20,7 @@ class LockDisplay(Static):
     }
 
     color = reactive("white")
-    display_state = reactive("normal")  # Can be "normal", "error", "success"
+    display_state = reactive("normal")  # Can be "normal", "error" or "success"
     animation_frame = reactive(0)  # current animation frame
 
     def render(self) -> str:
@@ -120,6 +120,24 @@ class LockDisplay(Static):
 
         success_frames = [
             """             
+    
+
+
+               +@@@@@@@+
+             %@@@@@@@@@@@%
+            @@@@:     .@@@@
+           @@@@         @@@@
+           @@@*         +@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@  @@@@@@@@@@@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         #@@@@@@@@@@@@@@@@@@@#
+                """,
+            """             
             
             
                +@@@@@@@+
@@ -130,10 +148,10 @@ class LockDisplay(Static):
            @@@#         *@@@
          @@@@@@@@@@@@@@@@@@@@@
          @@@@@@@@@@@@@@@@@@@@@
-         @@@@@@@@@@@@@@  @@@@@
-         @@@@@  @@@@@  @@@@@@@
-         @@@@@@@  @  @@@@@@@@@
-         @@@@@@@@  @@@@@@@@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@  @@@@@@@@@@@@@@
+         @@@@@@@  @@@@@@@@@@@@
+         @@@@@@@@@@@@@@@@@@@@@
          @@@@@@@@@@@@@@@@@@@@@
          #@@@@@@@@@@@@@@@@@@@#
                 """,
@@ -148,8 +166,8 @@ class LockDisplay(Static):
                          @@@ 
          @@@@@@@@@@@@@@@@@@@@@
          @@@@@@@@@@@@@@@@@@@@@
-         @@@@@@@@@@@@@@  @@@@@
-         @@@@@  @@@@@  @@@@@@@
+         @@@@@@@@@@@@@@@@@@@@@
+         @@@@@  @@@@@@@@@@@@@@
          @@@@@@@  @  @@@@@@@@@
          @@@@@@@@  @@@@@@@@@@@
          @@@@@@@@@@@@@@@@@@@@@
@@ -183,7 +201,7 @@ class LockDisplay(Static):
             return f"[{self.color}]" + normal_lock
 
     async def animateSuccess(self):
-        for frame in range(3):
+        for frame in range(4):
             self.animation_frame = frame
             await asyncio.sleep(0.07)
 
