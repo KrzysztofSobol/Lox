@@ -21,9 +21,11 @@ class CredentialItem(Static):
             with Horizontal(classes="credential-field"):
                 yield Static(f"Login: {self.username}", classes="credential-label")
                 yield Button("copy", classes="copy-button")
+                yield Button("edit", classes="edit-button")
             with Horizontal(classes="credential-field"):
                 yield Static(f"Password: {self.password}", classes="credential-label")
                 yield Button("copy", classes="copy-button")
+                yield Button("edit", classes="edit-button")
 
 class WebsiteItem(Static):
     def __init__(self, website, *args, **kwargs):
@@ -58,6 +60,11 @@ class DashboardView(Screen):
         if self.user:
             self.websites = self.website_controller.get_user_websites(self.user.id)
         self.toggle_delete_mode(False)
+        leftPane = self.query_one("#left-pane")
+        leftPane.border_title = "Websites"
+
+        leftPane = self.query_one("#right-pane")
+        leftPane.border_title = "Credentials"
 
     def compose(self) -> ComposeResult:
         with TextualContainer(id="app-grid"):
@@ -69,7 +76,8 @@ class DashboardView(Screen):
                 with VerticalScroll(id="left-pane-list"):
                     pass
             with VerticalScroll(id="right-pane"):
-                yield Static("Website details will appear here", id="website-details")
+                yield Static("Website details will appear here", id="credentials-placehodler")
+                yield Static("", id="website-details")
         yield Footer()
 
     def toggle_delete_mode(self, enabled: bool) -> None:
@@ -92,12 +100,23 @@ class DashboardView(Screen):
 
     def display_credentials(self, website_id: int, websiteName: str) -> None:
         credentials = self.credential_controller.getCredentialsByWebsite(website_id)
+
         details = self.query_one("#website-details")
+        details.styles.display = "block"
         details.remove_children()
 
+        credentialsPlaceholder = self.query_one("#credentials-placehodler")
+        rightPane = self.query_one("#right-pane")
+
         if not credentials:
-            details.mount(Static("No credentials found for this website"))
+            credentialsPlaceholder.styles.display = "block"
+            credentialsPlaceholder.update(renderable="No credentials found for this website")
+            details.styles.display = "none"
+            rightPane.styles.align = ("center", "middle")
             return
+
+        credentialsPlaceholder.styles.display = "none"
+        rightPane.styles.align = ("left", "top")
 
         for cred in credentials:
             details.mount(CredentialItem(cred.username, cred.encrypted_password, cred.saved_link, websiteName))
