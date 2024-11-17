@@ -88,6 +88,7 @@ class CredentialItem(Static):
             deleteButton.display = True
             deleteCancelButton.display = False
             deleteSureButton.display = False
+
             credentialRow.styles.border = ("round", "#F9D923")
         if event.button.id == "edit-confirm-credential-button":
             new_username = self.query_one("#edit-input-login").value
@@ -108,12 +109,13 @@ class CredentialItem(Static):
             loginEditInput.display = False
             passwordEditInput.display = False
             editButton.display = True
-            editCancelButton.display = False
             credentialRow.styles.border = ("round", "#80B3FF")
         elif event.button.id == "delete-credential-button":
             deleteButton.display = False
             deleteCancelButton.display = True
             deleteSureButton.display = True
+            editCancelButton.display = False
+            editButton.display = True
             credentialRow.styles.border = ("round", "#EB5353")
         elif event.button.id == "delete-cancel-credential-button":
             deleteButton.display = True
