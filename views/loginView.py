@@ -203,7 +203,7 @@ class LockDisplay(Static):
     async def animateSuccess(self):
         for frame in range(4):
             self.animation_frame = frame
-            await asyncio.sleep(0.07)
+            await asyncio.sleep(0.05)
 
     async def animateError(self):
         for frame in range(4):

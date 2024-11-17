@@ -10,9 +10,9 @@ class CredentialRepository:
 
     def create(self, credential: Credential) -> Credential:
         self.cursor.execute('''
-            INSERT INTO credentials (website_id, username, encrypted_password, saved_link)
+            INSERT INTO credentials (website_id, username, password, saved_link)
             VALUES (?, ?, ?, ?)
-        ''', (credential.website_id, credential.username, credential.encrypted_password, credential.saved_link))
+        ''', (credential.website_id, credential.username, credential.password, credential.saved_link))
 
         self.conn.commit()
         credential.id = self.cursor.lastrowid
@@ -20,7 +20,7 @@ class CredentialRepository:
 
     def get_all_by_website_id(self, website_id: int) -> List[Credential]:
         self.cursor.execute('''
-            SELECT id, website_id, username, encrypted_password, saved_link
+            SELECT id, website_id, username, password, saved_link
             FROM credentials 
             WHERE website_id = ?
         ''', (website_id,))
@@ -31,7 +31,7 @@ class CredentialRepository:
                 id=row[0],
                 website_id=row[1],
                 username=row[2],
-                encrypted_password=row[3],
+                password=row[3],
                 saved_link=row[4],
                 notes=None,
                 created_at=datetime.now(),
@@ -40,6 +40,29 @@ class CredentialRepository:
             credentials.append(credential)
 
         return credentials
+
+    def edit(self, credential_id: int, updates: dict) -> bool:
+        if not updates:
+            return True
+
+        set_clauses = []
+        values = []
+
+        for field, value in updates.items():
+            set_clauses.append(f"{field} = ?")
+            values.append(value)
+        values.append(credential_id)
+
+        query = f"""
+            UPDATE credentials 
+            SET {', '.join(set_clauses)}
+            WHERE id = ?
+        """
+
+        self.cursor.execute(query, values)
+        self.conn.commit()
+        return True
+
 
     def delete(self, credential_id: int) -> bool:
         try:

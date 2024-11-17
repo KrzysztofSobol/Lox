@@ -7,7 +7,7 @@ class Credential:
     id: Optional[int]
     website_id: int
     username: str
-    encrypted_password: bytes
+    password: str
     saved_link: str
     notes: Optional[str]
     created_at: datetime

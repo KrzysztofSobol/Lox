@@ -7,6 +7,9 @@ from containerService.container import Container as ServiceContainer
 from textual.message import Message
 import pyperclip
 
+website_controller = ServiceContainer.getWebsiteController()
+credential_controller = ServiceContainer.getCredentialController()
+
 class CredentialItem(Static):
     class DeleteCredential(Message):
         def __init__(self, credential_id: int):
@@ -22,36 +25,81 @@ class CredentialItem(Static):
         self.url = url
 
     def compose(self) -> ComposeResult:
-        with Horizontal(classes="credential-row"):
+        with Vertical(id="row", classes="credential-row"):
             with Horizontal(classes="credential-field-top"):
                 with Horizontal(classes="links-field"):
                     yield Static(f"Saved link:", classes="saved-link")
                     yield Static(f" {self.savedLink}", classes="link-label")
-                yield Button("edit", classes="edit-button")
+                yield Button("edit", id="edit-credential-button", classes="edit-button")
                 yield Button("delete", id="delete-credential-button")
-                yield Button("sure??", id="delete-sure-credential-button", classes="hidden")
-            yield Static("click to copy", classes="copy-text")
+                yield Button("cancel", id="delete-cancel-credential-button")
+                yield Button("done", id="edit-confirm-credential-button", variant="success")
+            with Horizontal(classes="credential-field-top"):
+                yield Static("click to copy login/password", classes="copy-text")
+                yield Button("sure??", id="delete-sure-credential-button")
             with Vertical(classes="credential-field"):
                 with Horizontal(classes="loginAndPassword-field"):
                     yield Static("Login:    ", classes="saved-link")
-                    yield Button(f"{self.username}", id="copy-button", classes="credential-label")
+                    yield Button(f"{self.username}", id="copy-button-login", classes="credential-label")
+                    yield Input(placeholder=f"{self.username}", id="edit-input-login", classes="edit-input")
                 with Horizontal(classes="loginAndPassword-field"):
                     yield Static("Password: ", classes="saved-link")
-                    yield Button(f"{self.password}", id="copy-button", classes="credential-label")
+                    yield Button(f"{self.password}", id="copy-button-password", classes="credential-label")
+                    yield Input(placeholder=f"{self.password}", id="edit-input-password", classes="edit-input")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         deleteButton = self.query_one("#delete-credential-button")
-        sureButton = self.query_one("#delete-sure-credential-button")
+        deleteCancelButton = self.query_one("#delete-cancel-credential-button")
+        deleteSureButton = self.query_one("#delete-sure-credential-button")
+        loginButton = self.query_one("#copy-button-login")
+        passwordButton = self.query_one("#copy-button-password")
+        loginEditInput = self.query_one("#edit-input-login")
+        passwordEditInput = self.query_one("#edit-input-password")
+        editButton = self.query_one("#edit-credential-button")
+        editCancelButton = self.query_one("#edit-confirm-credential-button")
+        credentialRow = self.query_one("#row")
 
-        if event.button.id == "delete-credential-button":
+        if event.button.id == "copy-button-login" or event.button.id == "copy-button-password":
+            pyperclip.copy(event.button.label)
+        elif event.button.id == "edit-credential-button":
+            loginButton.display = False
+            passwordButton.display = False
+            loginEditInput.display = True
+            passwordEditInput.display = True
+            editButton.display = False;
+            editCancelButton.display = True;
+            credentialRow.styles.border = ("round", "#F9D923")
+        if event.button.id == "edit-confirm-credential-button":
+            new_username = self.query_one("#edit-input-login").value
+            new_password = self.query_one("#edit-input-password").value
+
+            success = credential_controller.edit(
+                credential_id=self.credential_id,
+                username=new_username,
+                password=new_password
+            )
+            loginButton.display = True
+            passwordButton.display = True
+            loginEditInput.display = False
+            passwordEditInput.display = False
+            editButton.display = True;
+            editCancelButton.display = False;
+            credentialRow.styles.border = ("round", "#80B3FF")
+        elif event.button.id == "delete-credential-button":
             deleteButton.display = False
-            sureButton.display = True
-        elif event.button.id == "delete-sure-credential-button":
-            # Post the DeleteCredential message to be handled by the DashboardView
-            self.post_message(self.DeleteCredential(self.credential_id))
-            # Reset button state
+            deleteCancelButton.display = True
+            deleteSureButton.display = True
+            credentialRow.styles.border = ("round", "#EB5353")
+        elif event.button.id == "delete-cancel-credential-button":
             deleteButton.display = True
-            sureButton.display = False
+            deleteCancelButton.display = False
+            deleteSureButton.display = False
+            credentialRow.styles.border = ("round", "#80B3FF")
+        elif event.button.id == "delete-sure-credential-button":
+            self.post_message(self.DeleteCredential(self.credential_id))
+            deleteButton.display = True
+            deleteCancelButton.display = False
+            deleteSureButton.display = False
 
 class WebsiteItem(Static):
     def __init__(self, website, *args, **kwargs):
@@ -80,12 +128,10 @@ class DashboardView(Screen):
     def __init__(self, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
-        self.website_controller = ServiceContainer.getWebsiteController()
-        self.credential_controller = ServiceContainer.getCredentialController()
 
     def on_mount(self) -> None:
         if self.user:
-            self.websites = self.website_controller.get_user_websites(self.user.id)
+            self.websites = website_controller.get_user_websites(self.user.id)
         self.toggle_delete_website_mode(False)
         leftPane = self.query_one("#left-pane")
         leftPane.border_title = "Websites"
@@ -99,7 +145,7 @@ class DashboardView(Screen):
                 with Vertical(id="button-pane"):
                     with Horizontal(id="button-pane-del-add"):
                         yield Button("Delete website", id="delete-websites-button", variant="error")
-                        yield Button("Add website", id="add-website-button", variant="success")
+                        yield Button("Add credential", id="add-website-button", variant="success")
                         yield Button("I'm sure, delete", id="delete-sure-website-button", variant="error")
                     yield Input(placeholder="Search", id="search-input")
                 with VerticalScroll(id="left-pane-list"):
@@ -142,13 +188,13 @@ class DashboardView(Screen):
             details.mount(CredentialItem(
                 credential_id=cred.id,
                 username=cred.username,
-                password=cred.encrypted_password,
+                password=cred.password,
                 savedLink=cred.saved_link,
                 url=self.selected_website.url if self.selected_website else ""
             ))
 
     def delete_credential(self, credential_id: int) -> None:
-        self.credential_controller.delete(credential_id)
+        credential_controller.delete(credential_id)
         self.credentials = [cred for cred in self.credentials if cred.id != credential_id]
 
     def on_credential_item_delete_credential(self, message: CredentialItem.DeleteCredential) -> None:
@@ -156,10 +202,10 @@ class DashboardView(Screen):
 
     def refresh_credentials(self) -> None:
         if self.selected_website:
-            self.credentials = self.credential_controller.getCredentialsByWebsite(self.selected_website.id)
+            self.credentials = credential_controller.getCredentialsByWebsite(self.selected_website.id)
 
     def display_credentials(self, website_id: int, websiteName: str) -> None:
-        self.credentials = self.credential_controller.getCredentialsByWebsite(website_id)
+        self.credentials = credential_controller.getCredentialsByWebsite(website_id)
 
     def watch_websites(self, websites: list) -> None:
         container = self.query_one("#left-pane-list")
@@ -175,7 +221,7 @@ class DashboardView(Screen):
                 to_delete.append(website_item.website.id)
 
         for website_id in to_delete:
-            self.website_controller.delete_website(website_id)
+            website_controller.delete_website(website_id)
 
         self.websites = [w for w in self.websites if w.id not in to_delete]
         self.toggle_delete_website_mode(False)
@@ -194,11 +240,9 @@ class DashboardView(Screen):
             if isinstance(website_item, WebsiteItem):
                 self.selected_website = website_item.website
                 self.refresh_credentials()
-        elif event.button.id == "copy-button":
-            pyperclip.copy(event.button.label)
 
     def on_screen_resume(self) -> None:
         if self.user:
-            self.websites = self.website_controller.get_user_websites(self.user.id)
+            self.websites = website_controller.get_user_websites(self.user.id)
             if self.selected_website:
                 self.refresh_credentials()

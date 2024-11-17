@@ -141,7 +141,7 @@
 }
 
 .copy-text {
-    width: auto;
+    width: 100%;
     margin: 0;
     opacity: 15%;
 }
@@ -163,18 +163,10 @@
     border: none;
     width: auto;
     background: #34393e;
+    display: block;
 }
 
-.copy-button {
-    height: 1;
-    margin: 0;
-    max-width: 4;
-    margin-left: 1;
-    background: #34393e;
-    border: none;
-}
-
-.edit-button {
+#edit-credential-button {
     height: 1;
     max-width: 6;
     margin-left: 1;
@@ -182,6 +174,17 @@
     dock: right;
     background: #F9D923;
     border: none;
+}
+
+#edit-confirm-credential-button {
+    height: 1;
+    max-width: 6;
+    margin-right: 8;
+    margin-left: 1;
+    dock: right;
+    background: #F9D923;
+    border: none;
+    display: none;
 }
 
 #delete-credential-button {
@@ -194,7 +197,7 @@
     display: block;
 }
 
-#delete-sure-credential-button{
+#delete-cancel-credential-button {
     height: 1;
     max-width: 8;
     margin-left: 1;
@@ -204,9 +207,28 @@
     display: none;
 }
 
+#delete-sure-credential-button{
+    height: 1;
+    dock: right;
+    max-width: 8;
+    margin-left: 1;
+    background: #c42131;
+    border: none;
+    display: none;
+}
+
 #right-pane  > Static {
     color: auto;
     margin-bottom: 1;
     padding: 1;
+}
+
+.edit-input {
+    height: 1;
+    border: none;
+    width: auto;
+    margin: 0;
+    background: #34393e;
+    display: none;
 }
 

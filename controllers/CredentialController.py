@@ -7,7 +7,7 @@ class CredentialController:
         self.credentialRepository = credentialRepository
         self.websiteController = websiteController
 
-    def create_credential(self, user_id: int, url: str, username: str, password: bytes) -> Credential:
+    def create_credential(self, user_id: int, url: str, username: str, password: str) -> Credential:
         normalized_url = self.normalizeUrl(url)
 
         websites = self.websiteController.get_user_websites(user_id)
@@ -24,7 +24,7 @@ class CredentialController:
             id=None,
             website_id=website.id,
             username=username,
-            encrypted_password=password,
+            password=password,
             saved_link=url,
             notes=None,
             created_at=datetime.now(),
@@ -32,6 +32,18 @@ class CredentialController:
         )
 
         return self.credentialRepository.create(credential)
+
+    def edit(self, credential_id: int, username: str = None, password: str = None) -> bool:
+        updates = {}
+        if username is not None and username.strip():
+            updates['username'] = username
+        if password is not None and password.strip():
+            updates['password'] = password
+
+        if not updates:
+            return True
+
+        return self.credentialRepository.edit(credential_id, updates)
 
     def delete(self, credential_id: int) -> bool:
         return self.credentialRepository.delete(credential_id)
