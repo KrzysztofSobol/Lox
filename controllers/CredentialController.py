@@ -39,10 +39,6 @@ class CredentialController:
             updates['username'] = username
         if password is not None and password.strip():
             updates['password'] = password
-
-        if not updates:
-            return True
-
         return self.credentialRepository.edit(credential_id, updates)
 
     def delete(self, credential_id: int) -> bool:

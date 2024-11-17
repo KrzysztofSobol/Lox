@@ -18,6 +18,27 @@ class CredentialRepository:
         credential.id = self.cursor.lastrowid
         return credential
 
+    def get_by_id(self, credential_id: int) -> Credential:
+        self.cursor.execute('''
+            SELECT id, website_id, username, password, saved_link
+            FROM credentials
+            WHERE id = ?
+        ''', (credential_id,))
+
+        row = self.cursor.fetchone()
+        if row:
+            return Credential(
+                id=row[0],
+                website_id=row[1],
+                username=row[2],
+                password=row[3],
+                saved_link=row[4],
+                notes=None,
+                created_at=datetime.now(),  # Replace with actual timestamps if available in DB
+                updated_at=datetime.now()  # Replace with actual timestamps if available in DB
+            )
+        return None
+
     def get_all_by_website_id(self, website_id: int) -> List[Credential]:
         self.cursor.execute('''
             SELECT id, website_id, username, password, saved_link
@@ -41,9 +62,9 @@ class CredentialRepository:
 
         return credentials
 
-    def edit(self, credential_id: int, updates: dict) -> bool:
+    def edit(self, credential_id: int, updates: dict) -> Credential:
         if not updates:
-            return True
+            return self.get_by_id(credential_id)
 
         set_clauses = []
         values = []
@@ -58,11 +79,10 @@ class CredentialRepository:
             SET {', '.join(set_clauses)}
             WHERE id = ?
         """
-
         self.cursor.execute(query, values)
         self.conn.commit()
-        return True
 
+        return self.get_by_id(credential_id)
 
     def delete(self, credential_id: int) -> bool:
         try:

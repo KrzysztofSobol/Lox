@@ -232,3 +232,7 @@
     display: none;
 }
 
+#search-input {
+    border: hkey #687EFF;
+}
+

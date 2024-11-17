@@ -1,20 +1,19 @@
+from textual import log
 from textual.app import Screen, ComposeResult
 from textual.containers import VerticalScroll, Vertical, Horizontal
+from textual.css.query import NoMatches
 from textual.widgets import Static, Footer, Button, Switch, Input
 from textual.containers import Container as TextualContainer
 from textual.reactive import reactive
 from containerService.container import Container as ServiceContainer
-from textual.message import Message
 import pyperclip
 
 website_controller = ServiceContainer.getWebsiteController()
 credential_controller = ServiceContainer.getCredentialController()
 
 class CredentialItem(Static):
-    class DeleteCredential(Message):
-        def __init__(self, credential_id: int):
-            super().__init__()
-            self.credential_id = credential_id
+    username = reactive("")
+    password = reactive("")
 
     def __init__(self, credential_id: int, username: str, password: str, savedLink: str, url: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -47,6 +46,24 @@ class CredentialItem(Static):
                     yield Button(f"{self.password}", id="copy-button-password", classes="credential-label")
                     yield Input(placeholder=f"{self.password}", id="edit-input-password", classes="edit-input")
 
+    async def on_mount(self) -> None:
+        self.watch_username(self.username)
+        self.watch_password(self.password)
+
+    def watch_username(self, value: str) -> None:
+        try:
+            self.query_one("#copy-button-login").label = value
+            self.query_one("#edit-input-login").placeholder = value
+        except NoMatches as e:
+            log(f"Error in watch_username: {e}")
+
+    def watch_password(self, value: str) -> None:
+        try:
+            self.query_one("#copy-button-password").label = value
+            self.query_one("#edit-input-password").placeholder = value
+        except NoMatches as e:
+            log(f"Error in watch_password: {e}")
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         deleteButton = self.query_one("#delete-credential-button")
         deleteCancelButton = self.query_one("#delete-cancel-credential-button")
@@ -66,8 +83,11 @@ class CredentialItem(Static):
             passwordButton.display = False
             loginEditInput.display = True
             passwordEditInput.display = True
-            editButton.display = False;
-            editCancelButton.display = True;
+            editButton.display = False
+            editCancelButton.display = True
+            deleteButton.display = True
+            deleteCancelButton.display = False
+            deleteSureButton.display = False
             credentialRow.styles.border = ("round", "#F9D923")
         if event.button.id == "edit-confirm-credential-button":
             new_username = self.query_one("#edit-input-login").value
@@ -78,12 +98,17 @@ class CredentialItem(Static):
                 username=new_username,
                 password=new_password
             )
+
+            if success:
+                self.username = success.username
+                self.password = success.password
+
             loginButton.display = True
             passwordButton.display = True
             loginEditInput.display = False
             passwordEditInput.display = False
-            editButton.display = True;
-            editCancelButton.display = False;
+            editButton.display = True
+            editCancelButton.display = False
             credentialRow.styles.border = ("round", "#80B3FF")
         elif event.button.id == "delete-credential-button":
             deleteButton.display = False
@@ -96,7 +121,8 @@ class CredentialItem(Static):
             deleteSureButton.display = False
             credentialRow.styles.border = ("round", "#80B3FF")
         elif event.button.id == "delete-sure-credential-button":
-            self.post_message(self.DeleteCredential(self.credential_id))
+            if credential_controller.delete(self.credential_id):
+                self.remove()
             deleteButton.display = True
             deleteCancelButton.display = False
             deleteSureButton.display = False
@@ -120,6 +146,7 @@ class WebsiteItem(Static):
 class DashboardView(Screen):
     CSS_PATH = "../tcss/dashboard.tcss"
 
+    search_query = reactive("")
     websites = reactive([])
     credentials = reactive([])
     selected_website = reactive(None)
@@ -166,53 +193,9 @@ class DashboardView(Screen):
             for switch in self.query(".delete-toggle"):
                 switch.value = False
 
-    def watch_credentials(self, credentials: list) -> None:
-        details = self.query_one("#website-details")
-        details.styles.display = "block"
-        details.remove_children()
-
-        credentialsPlaceholder = self.query_one("#credentials-placehodler")
-        rightPane = self.query_one("#right-pane")
-
-        if not credentials:
-            credentialsPlaceholder.styles.display = "block"
-            credentialsPlaceholder.update(renderable="No credentials found for this website")
-            details.styles.display = "none"
-            rightPane.styles.align = ("center", "middle")
-            return
-
-        credentialsPlaceholder.styles.display = "none"
-        rightPane.styles.align = ("left", "top")
-
-        for cred in credentials:
-            details.mount(CredentialItem(
-                credential_id=cred.id,
-                username=cred.username,
-                password=cred.password,
-                savedLink=cred.saved_link,
-                url=self.selected_website.url if self.selected_website else ""
-            ))
-
-    def delete_credential(self, credential_id: int) -> None:
-        credential_controller.delete(credential_id)
-        self.credentials = [cred for cred in self.credentials if cred.id != credential_id]
-
-    def on_credential_item_delete_credential(self, message: CredentialItem.DeleteCredential) -> None:
-        self.delete_credential(message.credential_id)
-
     def refresh_credentials(self) -> None:
         if self.selected_website:
             self.credentials = credential_controller.getCredentialsByWebsite(self.selected_website.id)
-
-    def display_credentials(self, website_id: int, websiteName: str) -> None:
-        self.credentials = credential_controller.getCredentialsByWebsite(website_id)
-
-    def watch_websites(self, websites: list) -> None:
-        container = self.query_one("#left-pane-list")
-        container.remove_children()
-        for website in websites:
-            container.mount(WebsiteItem(website))
-        self.toggle_delete_website_mode(self.delete_mode)
 
     def delete_selected_websites(self) -> None:
         to_delete = []
@@ -225,6 +208,77 @@ class DashboardView(Screen):
 
         self.websites = [w for w in self.websites if w.id not in to_delete]
         self.toggle_delete_website_mode(False)
+
+    # ------------ Watch functions ------------
+    def watch_search_query(self, query: str) -> None:
+        filtered_websites = [
+            website for website in website_controller.get_user_websites(self.user.id)
+            if query.lower() in website.name.lower()
+        ]
+        self.websites = filtered_websites
+
+    def watch_credentials(self, credentials: list) -> None:
+        details = self.query_one("#website-details")
+        credentialsPlaceholder = self.query_one("#credentials-placehodler")
+        rightPane = self.query_one("#right-pane")
+
+        # Show placeholder if no credentials exist
+        if not credentials:
+            credentialsPlaceholder.styles.display = "block"
+            credentialsPlaceholder.update(renderable="No credentials found for this website")
+            details.styles.display = "none"
+            rightPane.styles.align = ("center", "middle")
+            return
+
+        # Otherwise, update UI
+        credentialsPlaceholder.styles.display = "none"
+        details.styles.display = "block"
+        rightPane.styles.align = ("left", "top")
+
+        # Get current credential IDs
+        current_credential_ids = {item.credential_id for item in self.query(CredentialItem)}
+        new_credential_ids = {cred.id for cred in credentials}
+
+        # Remove credentials no longer present
+        for item in self.query(CredentialItem):
+            if item.credential_id not in new_credential_ids:
+                item.remove()
+
+        # Add new credentials
+        for cred in credentials:
+            if cred.id not in current_credential_ids:
+                details.mount(CredentialItem(
+                    credential_id=cred.id,
+                    username=cred.username,
+                    password=cred.password,
+                    savedLink=cred.saved_link,
+                    url=self.selected_website.url if self.selected_website else ""
+                ))
+
+    def watch_websites(self, websites: list) -> None:
+        container = self.query_one("#left-pane-list")
+
+        # Get the current set of websites in the container
+        current_website_ids = {item.website.id for item in self.query(WebsiteItem)}
+        new_website_ids = {website.id for website in websites}
+
+        # Remove websites that are no longer present
+        for item in self.query(WebsiteItem):
+            if item.website.id not in new_website_ids:
+                item.remove()
+
+        # Add new websites
+        for website in websites:
+            if website.id not in current_website_ids:
+                container.mount(WebsiteItem(website))
+
+        # Optionally update existing website items if needed
+        self.toggle_delete_website_mode(self.delete_mode)
+
+    # ------------ Listeners ------------
+    def on_input_changed(self, event: Input.Changed) -> None:
+        if event.input.id == "search-input":
+            self.search_query = event.input.value
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "add-website-button":
@@ -241,6 +295,7 @@ class DashboardView(Screen):
                 self.selected_website = website_item.website
                 self.refresh_credentials()
 
+    # ------------ On resume ------------
     def on_screen_resume(self) -> None:
         if self.user:
             self.websites = website_controller.get_user_websites(self.user.id)
