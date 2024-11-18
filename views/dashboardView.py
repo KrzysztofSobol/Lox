@@ -126,6 +126,8 @@ class CredentialItem(Static):
         elif event.button.id == "delete-sure-credential-button":
             if credential_controller.delete(self.credential_id):
                 self.remove()
+                dashboard_view = self.screen
+                dashboard_view.refresh_credentials()
             deleteButton.display = True
             deleteCancelButton.display = False
             deleteSureButton.display = False
@@ -225,7 +227,6 @@ class DashboardView(Screen):
         credentialsPlaceholder = self.query_one("#credentials-placehodler")
         rightPane = self.query_one("#right-pane")
 
-        # Show placeholder if no credentials exist
         if not credentials:
             credentialsPlaceholder.styles.display = "block"
             credentialsPlaceholder.update(renderable="No credentials found for this website")
@@ -233,21 +234,17 @@ class DashboardView(Screen):
             rightPane.styles.align = ("center", "middle")
             return
 
-        # Otherwise, update UI
         credentialsPlaceholder.styles.display = "none"
         details.styles.display = "block"
         rightPane.styles.align = ("left", "top")
 
-        # Get current credential IDs
         current_credential_ids = {item.credential_id for item in self.query(CredentialItem)}
         new_credential_ids = {cred.id for cred in credentials}
 
-        # Remove credentials no longer present
         for item in self.query(CredentialItem):
             if item.credential_id not in new_credential_ids:
                 item.remove()
 
-        # Add new credentials
         for cred in credentials:
             if cred.id not in current_credential_ids:
                 details.mount(CredentialItem(
@@ -285,9 +282,18 @@ class DashboardView(Screen):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "add-website-button":
+            def handle_added_website(website_id: int | None) -> None:
+                if website_id is not None:
+                    self.websites = website_controller.get_user_websites(self.user.id)
+
+                    for website in self.websites:
+                        if website.id == website_id:
+                            self.selected_website = website
+                            self.refresh_credentials()
+                            break
             from views.addView import AddView
             add_view = AddView(user=self.user)
-            self.app.push_screen(add_view)
+            self.app.push_screen(add_view, handle_added_website)
         elif event.button.id == "delete-websites-button":
             self.toggle_delete_website_mode(not self.delete_mode)
         elif event.button.id == "delete-sure-website-button":

@@ -6,6 +6,9 @@ class WebsiteController:
     def __init__(self, websiteRepository: WebsiteRepository):
         self.websiteRepository = websiteRepository
 
+    def get_user_website_by_id(self, user_id: int, website_id: int) -> Website:
+        return self.websiteRepository.get_user_website_by_id(website_id, user_id)
+
     def get_user_websites(self, user_id: int) -> list[Website]:
         return self.websiteRepository.get_all_by_user_id(user_id)
 

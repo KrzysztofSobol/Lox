@@ -1,6 +1,5 @@
-#background {
+AddView {
     align: center middle;
-    hatch: right #80B3FF 10%;
 }
 
 #add-window {

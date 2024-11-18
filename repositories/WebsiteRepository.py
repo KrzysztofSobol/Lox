@@ -7,6 +7,22 @@ class WebsiteRepository:
         self.conn = connection
         self.cursor = connection.cursor()
 
+    def get_user_website_by_id(self, user_id: int, website_id: int) -> Website:
+        self.cursor.execute('''
+            SELECT id, user_id, name 
+            FROM websites 
+            WHERE user_id = ? AND id = ?
+        ''', (user_id, website_id))
+
+        row = self.cursor.fetchone()
+        if row:
+            return Website(
+                id=row[0],
+                user_id=row[1],
+                name=row[2]
+            )
+        return None
+
     def get_all_by_user_id(self, user_id: int) -> list[Website]:
         self.cursor.execute('''
             SELECT id, user_id, name, url 
