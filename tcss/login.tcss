@@ -18,9 +18,8 @@ Screen {
 Input {
     margin: 1 0;
     width: 100%;
-    &:focus {
+
     border: tall #80B3FF;
-  }
 }
 
 Button {
@@ -62,6 +61,7 @@ Button {
     margin-right: 1;
     margin-left: 1;
     margin-bottom: 1;
+    background: #687EFF;
 }
 
 #lock {
@@ -88,4 +88,8 @@ Button {
 .register #goToLogin-button {
     visibility: visible;
     display: block;
+}
+
+#Delete > .switch--slider {
+
 }

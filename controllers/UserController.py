@@ -10,7 +10,7 @@ class UserController:
         existing_user = self.userRepository.getUserByUsername(username)
         if existing_user:
             return False
-        elif len(password) >= 5 and (password == confirmPassword):
+        elif len(password) >= 4 and (password == confirmPassword):
             return self.userRepository.createUser(username, password)
         else:
             return False

@@ -108,6 +108,7 @@ class CredentialItem(Static):
             passwordButton.display = True
             loginEditInput.display = False
             passwordEditInput.display = False
+            editCancelButton.display = False
             editButton.display = True
             credentialRow.styles.border = ("round", "#80B3FF")
         elif event.button.id == "delete-credential-button":
