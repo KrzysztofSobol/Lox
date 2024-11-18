@@ -112,6 +112,10 @@ class CredentialItem(Static):
             editButton.display = True
             credentialRow.styles.border = ("round", "#80B3FF")
         elif event.button.id == "delete-credential-button":
+            loginButton.display = True
+            passwordButton.display = True
+            loginEditInput.display = False
+            passwordEditInput.display = False
             deleteButton.display = False
             deleteCancelButton.display = True
             deleteSureButton.display = True
@@ -156,6 +160,7 @@ class DashboardView(Screen):
     credentials = reactive([])
     selected_website = reactive(None)
     delete_mode = reactive(False)
+    last_clicked_button = None
 
     def __init__(self, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -301,6 +306,12 @@ class DashboardView(Screen):
         elif event.button.id == "website-name" and not self.delete_mode:
             website_item = event.button.parent.parent
             if isinstance(website_item, WebsiteItem):
+                if self.last_clicked_button:
+                    self.last_clicked_button.styles.border_top = ("tall", "#454a50")
+                    self.last_clicked_button.styles.border_bottom = ("tall", "#000000")
+                event.button.styles.border_top = ("tall", "#80B3FF")
+                event.button.styles.border_bottom = ("tall", "#3485ff")
+                self.last_clicked_button = event.button
                 self.selected_website = website_item.website
                 self.refresh_credentials()
 
