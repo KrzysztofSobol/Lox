@@ -13,7 +13,6 @@ class Container:
 
     @classmethod
     def initialize(cls):
-        """Initialize the container if not already initialized"""
         if not cls._initialized:
                 cls._instances['db_connection'] = init_db()
                 cls._initialized = True

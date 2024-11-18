@@ -1,7 +1,13 @@
+#background {
+    align: center middle;
+    hatch: right #80B3FF 10%;
+}
+
 #add-window {
     width: 50%;
     height: auto;
     background: $panel;
+    border: double #687EFF;
 }
 
 #url-input {
@@ -43,11 +49,9 @@
 }
 
 #add-button {
-    background: #28a745;
     color: white;
 }
 
 #cancel-button {
-    background: #dc3545;
     color: white;
 }

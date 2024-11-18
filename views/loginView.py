@@ -16,7 +16,7 @@ class LoginView:
 
 class LockDisplay(Static):
     SCREENS = {
-        "login": LoginView,
+        "login": LoginView
     }
 
     color = reactive("white")
@@ -222,9 +222,9 @@ class LoginView(Screen):
     def compose(self) -> ComposeResult:
         yield LockDisplay(id="lock")
         with Vertical(id="login-container"):
-            yield Input(placeholder="Login", id="login-input")
-            yield Input(placeholder="Password", id="password-input", password=True)
-            yield Input(placeholder="Confirm password", id="confirmPassword-input", password=True)
+            yield Input(placeholder="Login", id="login-input", classes="login-inputs")
+            yield Input(placeholder="Password", id="password-input", password=True, classes="login-inputs")
+            yield Input(placeholder="Confirm password", id="confirmPassword-input", password=True, classes="login-inputs")
             yield Button("Login", id="login-button", variant="primary")
             with Horizontal(id="newAcc-container"):
                 yield Static("Don't have an account?", id="goToRegister-text")
@@ -298,7 +298,17 @@ class LoginView(Screen):
                 confirmPassword = self.query_one("#confirmPassword-input", Input).value
                 user = self.userController.createUser(username, password, confirmPassword)
 
-            if user:
+            if user == 1:
+                self.notify("User not found!", severity="error")
+            elif user == 2:
+                self.notify("Wrong password!", severity="error")
+            elif user == 3:
+                self.notify("User with that name already exists!", severity="error")
+            elif user == 4:
+                self.notify("Passwords are not the same!", severity="error")
+            elif user == 5:
+                self.notify("Password should be 5 characters or longer!", severity="error")
+            elif user:
                 asyncio.create_task(self.handle_successful_login(user))
-            else:
-                asyncio.create_task(self.handle_error_login())
+                return
+            asyncio.create_task(self.handle_error_login())

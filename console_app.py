@@ -7,8 +7,7 @@ from containerService.container import Container
 
 class ModesApp(App):
     BINDINGS = [
-        ("ctrl+l", "switch_screen('login')", "Login"),
-        ("h", "switch_screen('help')", "Help"),
+        ("ctrl+l", "switch_screen('login')", "Login")
     ]
 
     SCREENS = {

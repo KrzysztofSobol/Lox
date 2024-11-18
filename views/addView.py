@@ -3,8 +3,6 @@ from textual.screen import Screen
 from textual.widgets import Footer, Input, Button
 from textual.app import ComposeResult
 from containerService.container import Container as ServiceContainer
-from views.dashboardView import DashboardView
-
 
 class AddView(Screen):
     CSS_PATH = "../tcss/addView.tcss"
@@ -16,14 +14,15 @@ class AddView(Screen):
         self.credential_controller = ServiceContainer.getCredentialController()
 
     def compose(self) -> ComposeResult:
-        with VerticalScroll(id="add-window"):
-            yield Input(placeholder="Url", id="url-input")
-            with Horizontal(id="password-login-pane"):
-                yield Input(placeholder="Login", id="login-input-add")
-                yield Input(placeholder="Password", id="password-input-add")
-            with Horizontal(id="add-cancel-pane"):
-                yield Button("Cancel", id="cancel-button", variant="error")
-                yield Button("Add", id="add-button", variant="success")
+        with Horizontal(id="background"):
+            with VerticalScroll(id="add-window"):
+                yield Input(placeholder="Url", id="url-input")
+                with Horizontal(id="password-login-pane"):
+                    yield Input(placeholder="Login", id="login-input-add")
+                    yield Input(placeholder="Password", id="password-input-add")
+                with Horizontal(id="add-cancel-pane"):
+                    yield Button("Cancel", id="cancel-button", variant="error")
+                    yield Button("Add", id="add-button", variant="success")
         yield Footer()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:

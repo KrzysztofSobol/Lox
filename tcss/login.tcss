@@ -18,9 +18,14 @@ Screen {
 Input {
     margin: 1 0;
     width: 100%;
-
-    border: tall #80B3FF;
 }
+
+.login-inputs {
+    &:focus {
+        border: tall #80B3FF;
+    }
+}
+
 
 Button {
     margin: 1 0;

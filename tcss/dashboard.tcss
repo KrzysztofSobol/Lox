@@ -20,7 +20,6 @@
     margin: 0;
     max-width: 50%;
     dock: right;
-    background: #36AE7C;
 }
 
 #delete-websites-button {
@@ -28,7 +27,6 @@
     margin: 0;
     max-width: 50%;
     dock: left;
-    background: #EB5353;
 }
 
 #left-pane-list {
@@ -52,7 +50,7 @@
     background: $panel;
     border: double #687EFF;
     border-title-color: #98E4FF;
-    hatch: right #80B3FF 20%;
+    hatch: right #80B3FF 10%;
     align: center middle;
     scrollbar-color: #687EFF;
     scrollbar-color-hover: #4958b3;
