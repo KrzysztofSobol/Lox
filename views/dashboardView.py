@@ -263,6 +263,11 @@ class DashboardView(Screen):
     def watch_websites(self, websites: list) -> None:
         container = self.query_one("#left-pane-list")
 
+        if self.selected_website:
+            if self.last_clicked_button:
+                self.last_clicked_button.styles.border_top = ("tall", "#454a50")
+                self.last_clicked_button.styles.border_bottom = ("tall", "#000000")
+
         # Get the current set of websites in the container
         current_website_ids = {item.website.id for item in self.query(WebsiteItem)}
         new_website_ids = {website.id for website in websites}
@@ -277,9 +282,6 @@ class DashboardView(Screen):
             if website.id not in current_website_ids:
                 container.mount(WebsiteItem(website))
 
-        # Optionally update existing website items if needed
-        self.toggle_delete_website_mode(self.delete_mode)
-
     # ------------ Listeners ------------
     def on_input_changed(self, event: Input.Changed) -> None:
         if event.input.id == "search-input":
@@ -290,7 +292,6 @@ class DashboardView(Screen):
             def handle_added_website(website_id: int | None) -> None:
                 if website_id is not None:
                     self.websites = website_controller.get_user_websites(self.user.id)
-
                     for website in self.websites:
                         if website.id == website_id:
                             self.selected_website = website
@@ -303,6 +304,7 @@ class DashboardView(Screen):
             self.toggle_delete_website_mode(not self.delete_mode)
         elif event.button.id == "delete-sure-website-button":
             self.delete_selected_websites()
+            self.refresh_credentials()
         elif event.button.id == "website-name" and not self.delete_mode:
             website_item = event.button.parent.parent
             if isinstance(website_item, WebsiteItem):
