@@ -6,7 +6,7 @@ Screen {
 #login-container {
     width: 40;
     height: auto;
-    border: #004578;
+    outline: double #687EFF;
     padding: 1;
 }
 
@@ -18,6 +18,9 @@ Screen {
 Input {
     margin: 1 0;
     width: 100%;
+    &:focus {
+    border: tall #80B3FF;
+  }
 }
 
 Button {

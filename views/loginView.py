@@ -252,7 +252,6 @@ class LoginView(Screen):
 
         # Run the animation
         await lock.animateError()
-        await asyncio.sleep(0.5) # small break between changing the screen
 
     def on_screen_resume(self) -> None:
 
