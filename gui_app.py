@@ -5,7 +5,6 @@ def run_gui():
     app.geometry("720x480")
     app.title("PasswordManager")
     app.resizable(False, False)
-    # Add your GUI components here
     app.mainloop()
 
 def main():
