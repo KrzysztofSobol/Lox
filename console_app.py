@@ -1,8 +1,8 @@
 from textual.app import App
 
-from views.addView import AddView
-from views.dashboardView import DashboardView
-from views.loginView import LoginView
+from viewsConsole.addView import AddView
+from viewsConsole.dashboardView import DashboardView
+from viewsConsole.loginView import LoginView
 from containerService.container import Container
 
 class ModesApp(App):

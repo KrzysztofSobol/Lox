@@ -1,5 +1,5 @@
-import hashlib
 from repositories.UserRepository import UserRepository
+import hashlib
 
 class UserController:
     def __init__(self, userRepository: UserRepository):

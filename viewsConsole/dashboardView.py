@@ -297,7 +297,7 @@ class DashboardView(Screen):
                             self.selected_website = website
                             self.refresh_credentials()
                             break
-            from views.addView import AddView
+            from viewsConsole.addView import AddView
             add_view = AddView(user=self.user)
             self.app.push_screen(add_view, handle_added_website)
         elif event.button.id == "delete-websites-button":

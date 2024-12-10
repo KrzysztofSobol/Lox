@@ -8,7 +8,7 @@ import asyncio
 from controllers.UserController import UserController
 from database.database import init_db
 from repositories.UserRepository import UserRepository
-from views.dashboardView import DashboardView
+from viewsConsole.dashboardView import DashboardView
 from containerService.container import Container
 
 class LoginView:
