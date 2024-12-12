@@ -9,7 +9,7 @@ class App(ctk.CTk):
         # Window setup
         self.geometry("720x480")
         self.title("PasswordManager")
-        self.resizable(False, False)
+        self.resizable(True, True)
 
         # Configure grid for the main window
         self.grid_columnconfigure(0, weight=1)
