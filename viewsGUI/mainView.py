@@ -116,14 +116,93 @@ class MainScreen(ctk.CTkFrame):
             credential_frame = ctk.CTkFrame(self.credentials_list_frame)
             credential_frame.pack(padx=5, pady=5, fill="x")
 
-            # Credential name label (for now, we'll just show the username)
-            credential_label = ctk.CTkLabel(
-                credential_frame,
-                text=credential.username,
+            # Credential header (link, edit, delete)
+            header_frame = ctk.CTkFrame(credential_frame, fg_color="#808080")
+            header_frame.pack(fill="x", padx=5, pady=2)
+
+            # Credential link
+            credential_link = ctk.CTkLabel(
+                header_frame,
+                text=credential.saved_link,
                 anchor="w",
-                width=250
+                width=250,
+                fg_color="transparent",
+                text_color="#00b8d9",
+                cursor="hand2"
             )
-            credential_label.pack(padx=5, pady=2, fill="x")
+            credential_link.pack(side="left", padx=5, pady=2)
+            credential_link.bind("<Button-1>", lambda event, url=credential.saved_link: self.open_url(url))
+
+            # Edit button
+            edit_button = ctk.CTkButton(
+                header_frame,
+                text="Edit",
+                width=80,
+                height=30,
+                fg_color="#00b8d9",
+                hover_color="#007d8c",
+                command=lambda cred_id=credential.id: self.edit_credential(cred_id)
+            )
+            edit_button.pack(side="right", padx=5, pady=2)
+
+            # Delete button
+            delete_button = ctk.CTkButton(
+                header_frame,
+                text="Delete",
+                width=80,
+                height=30,
+                fg_color="#00b8d9",
+                hover_color="#007d8c",
+                command=lambda cred_id=credential.id: self.delete_credential(cred_id)
+            )
+            delete_button.pack(side="right", padx=5, pady=2)
+
+            # Credential details (login, password)
+            details_frame = ctk.CTkFrame(credential_frame, bg_color="#1e1e1e")
+            details_frame.pack(fill="x", padx=5, pady=2)
+
+            login_label = ctk.CTkLabel(details_frame, text="Login:", anchor="w", text_color="#00b8d9",
+                                       bg_color="#1e1e1e")
+            login_label.pack(side="left", padx=5, pady=2)
+
+            login_text = ctk.CTkLabel(details_frame, text=credential.username, anchor="w", text_color="#ffffff",
+                                      bg_color="#1e1e1e")
+            login_text.pack(side="left", padx=5, pady=2)
+
+            login_copy_button = ctk.CTkButton(
+                details_frame,
+                text="Copy",
+                width=60,
+                height=25,
+                fg_color="#00b8d9",
+                bg_color="#1e1e1e",
+                hover_color="#007d8c",
+                command=lambda: self.copy_to_clipboard(credential.username)
+            )
+            login_copy_button.pack(side="left", padx=5, pady=2)
+
+            details_frame2 = ctk.CTkFrame(credential_frame, bg_color="#1e1e1e")
+            details_frame2.pack(fill="x", padx=5, pady=2)
+
+            password_label = ctk.CTkLabel(details_frame2, text="Password:", anchor="w", text_color="#00b8d9",
+                                          bg_color="#1e1e1e")
+            password_label.pack(side="left", padx=5, pady=2)
+
+            password_text = ctk.CTkLabel(details_frame2, text=credential.password, anchor="w", text_color="#ffffff",
+                                         bg_color="#1e1e1e")
+            password_text.pack(side="left", padx=5, pady=2)
+
+            password_copy_button = ctk.CTkButton(
+                details_frame2,
+                text="Copy",
+                width=60,
+                height=25,
+                fg_color="#00b8d9",
+                bg_color="#1e1e1e",
+                hover_color="#007d8c",
+                command=lambda: self.copy_to_clipboard(credential.password)
+            )
+            password_copy_button.pack(side="left", padx=5, pady=2)
 
     def filter_websites(self, event=None):
         """
