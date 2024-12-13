@@ -22,6 +22,9 @@ class LoginScreen(ctk.CTkFrame):
         elif user == 5:
             print("placeholder")
         elif user:
+            # Pass the authenticated user to the MainScreen
+            main_screen = self.controller.frames[MainScreen]
+            main_screen.load_websites(user.id)  # Load websites for this user
             self.controller.show_frame(MainScreen)
             return
 
