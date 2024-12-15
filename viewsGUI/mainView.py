@@ -205,7 +205,7 @@ class MainScreen(ctk.CTkFrame):
 
     def load_credentials(self, website_id):
         """
-        Load credentials for a specific website
+        Load credentials for a specific website with edit functionality
         """
         self.selected_website_id = website_id
 
@@ -270,19 +270,21 @@ class MainScreen(ctk.CTkFrame):
                 edit_button = ctk.CTkButton(
                     header_frame,
                     text="Edit",
-                    width=100,  # Increased from 80
-                    height=40,  # Increased from 30
+                    width=100,
+                    height=40,
                     fg_color="#00b8d9",
                     hover_color="#007d8c",
-                    font=("", 14)  # Added font size
+                    font=("", 14)
                 )
                 edit_button.pack(side="right", padx=5, pady=2)
 
+                # Login section
                 login_label = ctk.CTkLabel(details_frame, text="Login:", font=("", 14), anchor="w", bg_color="#2c2c2c",
                                            text_color="#00b8d9")
                 login_label.pack(side="left", padx=5, pady=2)
 
-                login_text = ctk.CTkEntry(details_frame, placeholder_text=credential.username, font=("", 14), state="normal")
+                login_text = ctk.CTkEntry(details_frame, placeholder_text=credential.username, font=("", 14),
+                                          state="normal")
                 login_text.configure(state="disabled")
                 login_text.pack(side="left", padx=5, pady=2)
 
@@ -291,9 +293,9 @@ class MainScreen(ctk.CTkFrame):
                 login_copy_button = ctk.CTkButton(
                     details_frame,
                     text="Copy",
-                    width=80,  # Increased
-                    height=40,  # Increased
-                    font=("", 14),  # Added font specification to increase text size
+                    width=80,
+                    height=40,
+                    font=("", 14),
                     fg_color="#3b3b3b",
                     bg_color="#2c2c2c",
                     hover_color="#007d8c",
@@ -302,21 +304,24 @@ class MainScreen(ctk.CTkFrame):
                 )
                 login_copy_button.pack(side="left", padx=5, pady=2)
 
+                # Password section
                 details_frame2 = ctk.CTkFrame(credential_frame, bg_color="#2c2c2c", fg_color="#2c2c2c")
                 details_frame2.pack(fill="x", padx=5, pady=2)
 
-                password_label = ctk.CTkLabel(details_frame2, text="Password:", font=("", 14), anchor="w", bg_color="#2c2c2c", text_color="#00b8d9")
+                password_label = ctk.CTkLabel(details_frame2, text="Password:", font=("", 14), anchor="w",
+                                              bg_color="#2c2c2c", text_color="#00b8d9")
                 password_label.pack(side="left", padx=5, pady=2)
 
-                password_text = ctk.CTkEntry(details_frame2, placeholder_text=credential.password, font=("", 14), state="normal")
+                password_text = ctk.CTkEntry(details_frame2, placeholder_text=credential.password, font=("", 14),
+                                             state="normal")
                 password_text.configure(state="disabled")
                 password_text.pack(side="left", padx=5, pady=2)
 
                 password_copy_button = ctk.CTkButton(
                     details_frame2,
                     text="Copy",
-                    width=80,  # Increased
-                    height=40,  # Increased
+                    width=80,
+                    height=40,
                     font=("", 14),
                     fg_color="#3b3b3b",
                     bg_color="#2c2c2c",
@@ -325,6 +330,43 @@ class MainScreen(ctk.CTkFrame):
                     command=lambda: pyperclip.copy(credential.password)
                 )
                 password_copy_button.pack(side="left", padx=5, pady=2)
+
+                # Edit functionality
+                def toggle_edit(cred_id, login_entry, password_entry, edit_btn):
+                    if edit_btn.cget("text") == "Edit":
+                        # Switch to edit mode
+                        login_entry.configure(state="normal")
+                        password_entry.configure(state="normal")
+
+                        # Clear any existing text and insert current credential values
+                        login_entry.delete(0, 'end')
+                        login_entry.insert(0, credential.username)
+
+                        password_entry.delete(0, 'end')
+                        password_entry.insert(0, credential.password)
+
+                        edit_btn.configure(text="Save")
+                    else:
+                        # Save changes
+                        new_username = login_entry.get() or credential.username
+                        new_password = password_entry.get() or credential.password
+
+                        # Call edit method
+                        success = self.credentialController.edit(cred_id, new_username, new_password)
+
+                        if success:
+                            # Reload credentials to reflect changes
+                            self.load_credentials(website_id)
+                        else:
+                            # Optionally handle edit failure (show error message)
+                            print("Failed to update credential")
+
+                # Bind edit button to toggle function
+                edit_button.configure(
+                    command=lambda btn=edit_button, login=login_text,
+                                   pwd=password_text, cred_id=credential.id:
+                    toggle_edit(cred_id, login, pwd, btn)
+                )
 
     def filter_websites(self, event=None):
         """
