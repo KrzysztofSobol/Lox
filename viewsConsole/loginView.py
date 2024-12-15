@@ -1,6 +1,6 @@
 from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Footer, Static, Input, Button
+from textual.widgets import Footer, Static, Input, Button, OptionList
 from textual.app import ComposeResult
 from textual.containers import Vertical, Horizontal
 import asyncio
@@ -10,6 +10,7 @@ from database.database import init_db
 from repositories.UserRepository import UserRepository
 from viewsConsole.dashboardView import DashboardView
 from containerService.container import Container
+from containerService.modeController import ModeController
 
 class LoginView:
     pass
@@ -220,16 +221,33 @@ class LoginView(Screen):
         self.userController = Container.getUserController()
 
     def compose(self) -> ComposeResult:
-        yield LockDisplay(id="lock")
-        with Vertical(id="login-container"):
-            yield Input(placeholder="Login", id="login-input", classes="login-inputs")
-            yield Input(placeholder="Password", id="password-input", password=True, classes="login-inputs")
-            yield Input(placeholder="Confirm password", id="confirmPassword-input", password=True, classes="login-inputs")
-            yield Button("Login", id="login-button", variant="primary")
-            with Horizontal(id="newAcc-container"):
-                yield Static("Don't have an account?", id="goToRegister-text")
-                yield Button("Create", id="goToRegister-button")
-                yield Button("Go back", id="goToLogin-button")
+        # Keep the existing composition, but update the mode-related elements
+        with Vertical(classes="box"):
+            yield Button("Mode", id="mode-button")
+            with Vertical(id="mode-container"):
+                option_list = OptionList(
+                    "Console Mode",
+                    "GUI Mode"
+                )
+                option_list.border_title = "Select Mode"
+                yield option_list
+                with Horizontal(id="mode-button-container"):
+                    yield Button("Save and reset", id="save-reset-mode", classes="saveButtons")
+                    yield Button("Save", id="save-mode", classes="saveButtons")
+        with Vertical(classes="box loginBox"):
+            yield LockDisplay(id="lock")
+            with Vertical(id="login-container"):
+                yield Input(placeholder="Login", id="login-input", classes="login-inputs")
+                yield Input(placeholder="Password", id="password-input", password=True, classes="login-inputs")
+                yield Input(placeholder="Confirm password", id="confirmPassword-input", password=True,
+                            classes="login-inputs")
+                yield Button("Login", id="login-button", variant="primary")
+                with Horizontal(id="newAcc-container"):
+                    yield Static("Don't have an account?", id="goToRegister-text")
+                    yield Button("Create", id="goToRegister-button")
+                    yield Button("Go back", id="goToLogin-button")
+        with Vertical(classes="box"):
+            yield Static()
         yield Footer()
 
     async def handle_successful_login(self, user):
@@ -312,3 +330,38 @@ class LoginView(Screen):
                 asyncio.create_task(self.handle_successful_login(user))
                 return
             asyncio.create_task(self.handle_error_login())
+
+        elif event.button.id == "mode-button":
+            mode_container = self.query_one("#mode-container")
+
+            # Toggle visibility
+            if mode_container.styles.visibility == "visible":
+                mode_container.styles.visibility = "hidden"
+            else:
+                mode_container.styles.visibility = "visible"
+
+        elif event.button.id in ["save-mode", "save-reset-mode"]:
+            # Get the selected mode from OptionList
+            option_list = self.query_one(OptionList)
+            highlighted_index = option_list.highlighted
+
+            # Check if an option is actually selected
+            if highlighted_index is not None:
+                # Get the text of the selected option
+                selected_mode = option_list.get_option_at_index(highlighted_index).prompt
+
+                # Convert mode to boolean string
+                mode_value = "true" if selected_mode == "GUI Mode" else "false"
+
+                # Save the mode
+                ModeController.save_mode(mode_value)
+
+                # Hide mode container
+                self.query_one("#mode-container").styles.visibility = "hidden"
+
+                # If "Save and reset" is clicked, restart the application
+                if event.button.id == "save-reset-mode":
+                    ModeController.restart_application()
+            else:
+                # Optional: Notify user to select a mode
+                self.notify("Please select a mode", severity="warning")

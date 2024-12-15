@@ -1,6 +1,39 @@
-
 Screen {
+    layout: horizontal;
+}
+
+.box {
+    height: 100%;
+    width: 1fr;
+}
+
+.loginBox {
+    width: 1fr;
     align: center middle;
+}
+
+#mode-button-container{
+    height: auto;
+    margin: 0;
+}
+
+#mode-button{
+    width: 10%;
+    margin: 0;
+}
+
+#mode-container{
+    visibility: hidden;
+    margin-top: 1;
+    width: 50;
+    height: auto;
+    border: tall #80B3FF;
+}
+
+.saveButtons{
+    width: 50%;
+    margin-top: 1;
+    margin-bottom: 0;
 }
 
 #login-container {
@@ -25,7 +58,6 @@ Input {
         border: tall #80B3FF;
     }
 }
-
 
 Button {
     margin: 1 0;
