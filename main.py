@@ -1,5 +1,4 @@
 import subprocess
-import sys
 
 def read_mode_from_file():
     try:
@@ -7,10 +6,8 @@ def read_mode_from_file():
             mode = file.read().strip().lower()
         return mode == 'true'
     except FileNotFoundError:
-        print("mode.txt not found. Defaulting to GUI mode.")
         return True
     except Exception as e:
-        print(f"Error reading mode.txt: {e}. Defaulting to GUI mode.")
         return True
 
 def main():

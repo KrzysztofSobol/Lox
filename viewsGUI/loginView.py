@@ -70,3 +70,18 @@ class LoginScreen(ctk.CTkFrame):
             command=self.login
         )
         self.login_button.pack(pady=20)
+
+        self.footer_label = ctk.CTkLabel(
+            self,
+            text="© 2024 Password Manager",
+            text_color="gray",
+            font=("", 10)
+        )
+        self.footer_label.pack(side="bottom", pady=10)
+
+    def clear_inputs(self):
+        """
+        Clear username and password input fields
+        """
+        self.username_entry.delete(0, 'end')
+        self.password_entry.delete(0, 'end')

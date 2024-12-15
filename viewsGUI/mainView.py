@@ -3,7 +3,7 @@ import customtkinter as ctk
 import pyperclip
 
 from containerService.container import Container
-
+from viewsGUI.addView import AddView
 
 class WebsiteWidget(ctk.CTkFrame):
     def __init__(self, parent, website, on_click_callback, on_delete_callback, delete_mode=False, initially_deleted=False):
@@ -13,7 +13,7 @@ class WebsiteWidget(ctk.CTkFrame):
         self.website_id = website.id
 
         # Configure layout
-        self.pack(padx=10, pady=2, fill="x")
+        self.pack(pady=2, fill="x")
 
         # Website button
         self.website_button = ctk.CTkButton(
@@ -26,17 +26,20 @@ class WebsiteWidget(ctk.CTkFrame):
         )
         self.website_button.pack(side="left", expand=True, fill="x")
 
-        # Delete switch
-        self.delete_switch = ctk.CTkSwitch(self, text="")
+        # Delete switch (always created)
+        self.delete_switch = ctk.CTkSwitch(self, text="Delete", width=5)
         self.delete_switch.configure(command=self._toggle_delete)
 
-        # Manage delete mode and initial deletion state
+        # Track delete mode and initial state
         self._is_delete_mode = delete_mode
         self._initially_deleted = initially_deleted
 
-        # Initialize switch based on delete mode and initial state
+        # Initially hide the switch
+        self.delete_switch.pack_forget()
+
+        # If in delete mode, show the switch
         if delete_mode:
-            self.delete_switch.pack(side="right", expand=True)
+            self.delete_switch.pack(side="right", padx=(6,6))
             if initially_deleted:
                 self.delete_switch.select()
             else:
@@ -52,7 +55,7 @@ class MainScreen(ctk.CTkFrame):
         self.websites_to_delete = []
         self.controller = controller  # Store controller reference
         self.websiteController = Container.getWebsiteController()
-        self.credentialController = Container.getCredentialController()  # Add credential controller
+        self.credentialController = Container.getCredentialController()
         self.current_user_id = None  # Will be set when user logs in
         self.all_websites = []  # Store all websites for filtering
         self.selected_website_id = None  # Track currently selected website
@@ -89,8 +92,9 @@ class MainScreen(ctk.CTkFrame):
         self.add_button = ctk.CTkButton(
             left_top_frame,
             text="Add",
-            width=120,  # Increased from 100
-            height=50  # Increased from 40
+            width=120,
+            height=50,
+            command=self.open_add_view  # Add command to open AddView
         )
         self.add_button.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
@@ -121,6 +125,14 @@ class MainScreen(ctk.CTkFrame):
         # Scrollable frame for credentials list
         self.credentials_list_frame = ctk.CTkScrollableFrame(right_frame)
         self.credentials_list_frame.pack(fill="both", expand=True, padx=5, pady=5)
+
+        self.footer_label = ctk.CTkLabel(
+            self,
+            text="© 2024 Password Manager",
+            text_color="gray",
+            font=("", 10)
+        )
+        self.footer_label.grid(row=2, column=0, columnspan=2, pady=10)
 
     def load_websites(self, user_id):
         self.current_user_id = user_id
@@ -162,7 +174,7 @@ class MainScreen(ctk.CTkFrame):
             for container in self.website_list_frame.winfo_children():
                 if isinstance(container, WebsiteWidget):
                     container._is_delete_mode = True
-                    container.delete_switch.pack(side="right", padx=5)
+                    container.delete_switch.pack(side="right", padx=(6,6))
                     # Apply the previously selected state (if any)
                     if container.website_id in self.deleted_website_ids:
                         container.delete_switch.select()
@@ -284,7 +296,7 @@ class MainScreen(ctk.CTkFrame):
                 login_label.pack(side="left", padx=5, pady=2)
 
                 login_text = ctk.CTkEntry(details_frame, placeholder_text=credential.username, font=("", 14),
-                                          state="normal")
+                                          state="normal", width=330)
                 login_text.configure(state="disabled")
                 login_text.pack(side="left", padx=5, pady=2)
 
@@ -313,7 +325,7 @@ class MainScreen(ctk.CTkFrame):
                 password_label.pack(side="left", padx=5, pady=2)
 
                 password_text = ctk.CTkEntry(details_frame2, placeholder_text=credential.password, font=("", 14),
-                                             state="normal")
+                                             state="normal", width=305)
                 password_text.configure(state="disabled")
                 password_text.pack(side="left", padx=5, pady=2)
 
@@ -340,10 +352,10 @@ class MainScreen(ctk.CTkFrame):
 
                         # Clear any existing text and insert current credential values
                         login_entry.delete(0, 'end')
-                        login_entry.insert(0, credential.username)
+                        login_entry.insert(0, login_entry.cget("placeholder_text"))
 
                         password_entry.delete(0, 'end')
-                        password_entry.insert(0, credential.password)
+                        password_entry.insert(0, password_entry.cget("placeholder_text"))
 
                         edit_btn.configure(text="Save")
                     else:
@@ -356,7 +368,15 @@ class MainScreen(ctk.CTkFrame):
 
                         if success:
                             # Reload credentials to reflect changes
-                            self.load_credentials(website_id)
+                            login_entry.delete(0, 'end')
+                            password_entry.delete(0, 'end')
+                            login_entry.configure(placeholder_text=new_username)
+                            password_entry.configure(placeholder_text=new_password)
+                            credential.username = new_username
+                            credential.password = new_password
+                            login_entry.configure(state="disabled")
+                            password_entry.configure(state="disabled")
+                            edit_btn.configure(text="Edit")
                         else:
                             # Optionally handle edit failure (show error message)
                             print("Failed to update credential")
@@ -452,3 +472,14 @@ class MainScreen(ctk.CTkFrame):
             for child in delete_frame.winfo_children():
                 if isinstance(child, ctk.CTkButton) and child.cget("text") == "Sure?":
                     child.destroy()
+
+    def open_add_view(self):
+        if self.current_user_id:
+            # Get the AddView frame from the controller
+            add_view = self.controller.frames[AddView]
+
+            # Pass the current user ID to the AddView
+            add_view.set_current_user(self.current_user_id)
+
+            # Show the AddView
+            self.controller.show_frame(AddView)

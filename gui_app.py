@@ -1,6 +1,8 @@
+import tkinter as tk  # Add this import
 import customtkinter as ctk
 from viewsGUI.loginView import LoginScreen
 from viewsGUI.mainView import MainScreen
+from viewsGUI.addView import AddView
 
 class App(ctk.CTk):
     def __init__(self):
@@ -27,22 +29,29 @@ class App(ctk.CTk):
         self.frames = {}
 
         # Create screens
-        for F in (LoginScreen, MainScreen):
+        for F in (LoginScreen, MainScreen, AddView):  # Add AddView here
             frame = F(self.container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
         # Show login screen initially
         self.show_frame(LoginScreen)
+        self.bind("<Control-l>", self.return_to_login)
 
     def show_frame(self, cont):
         """Raise the specified frame to the top"""
         frame = self.frames[cont]
         frame.tkraise()
 
+    def return_to_login(self, event=None):
+        login_screen = self.frames[LoginScreen]
+        login_screen.clear_inputs()
+        self.show_frame(LoginScreen)
+
 def main():
     ctk.set_appearance_mode("system")
     ctk.set_default_color_theme("blue")
+
 
     app = App()
     app.mainloop()
