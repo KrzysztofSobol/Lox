@@ -2,7 +2,7 @@
 import os
 import sys
 import subprocess
-
+import asyncio
 
 class ModeController:
     @staticmethod
@@ -30,10 +30,15 @@ class ModeController:
             project_root = os.path.dirname(script_dir)
             main_py_path = os.path.join(project_root, 'main.py')
 
-            # Restart the application
+            # Instead of sys.exit(), use subprocess to start the new process
             subprocess.Popen([sys.executable, main_py_path])
 
-            # Exit the current application
-            sys.exit(0)
+            # For Textual apps, we need to cancel all running tasks
+            # and close the event loop gracefully
+            for task in asyncio.all_tasks():
+                task.cancel()
+
+            # Return instead of exiting
+            return
         except Exception as e:
             print(f"Error restarting application: {e}")

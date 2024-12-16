@@ -13,7 +13,7 @@ class WebsiteWidget(ctk.CTkFrame):
         self.website_id = website.id
 
         # Configure layout
-        self.pack(pady=2, fill="x")
+        self.pack(pady=4, fill="x")
 
         # Website button
         self.website_button = ctk.CTkButton(
@@ -22,7 +22,10 @@ class WebsiteWidget(ctk.CTkFrame):
             anchor="w",
             height=40,
             font=("", 14),
-            command=lambda: on_click_callback(website.id)
+            command=lambda: on_click_callback(website.id),
+            border_width=1,
+            border_color="#80b3ff",
+            fg_color="#34393e"
         )
         self.website_button.pack(side="left", expand=True, fill="x")
 
@@ -68,11 +71,11 @@ class MainScreen(ctk.CTkFrame):
         self.grid_rowconfigure(1, weight=1)  # Make main content row expandable
 
         # Left Side Column (20% width) - Previous implementation remains the same
-        left_frame = ctk.CTkFrame(self)
+        left_frame = ctk.CTkFrame(self, border_width=1, border_color="#687eff", fg_color="#24292f")
         left_frame.grid(row=0, column=0, rowspan=2, sticky="nsew")
 
         # Top 5% of left column - Buttons
-        left_top_frame = ctk.CTkFrame(left_frame, height=80)  # Increased height
+        left_top_frame = ctk.CTkFrame(left_frame, height=80, fg_color="#24292f")  # Increased height
         left_top_frame.pack(side="top", fill="x", padx=5, pady=5)
 
         # Configure the frame to distribute buttons evenly
@@ -94,12 +97,14 @@ class MainScreen(ctk.CTkFrame):
             text="Add",
             width=120,
             height=50,
+            fg_color = "#4ebf71",
+            hover_color = "#37864f",
             command=self.open_add_view  # Add command to open AddView
         )
         self.add_button.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
         # Search input frame
-        search_frame = ctk.CTkFrame(left_frame, height=70)
+        search_frame = ctk.CTkFrame(left_frame, height=70, fg_color="#24292f")
         search_frame.pack(fill="x", padx=5, pady=5)
 
         # Search Entry
@@ -115,11 +120,11 @@ class MainScreen(ctk.CTkFrame):
         self.search_entry.bind("<KeyRelease>", self.filter_websites)
 
         # Scrollable frame for website list
-        self.website_list_frame = ctk.CTkScrollableFrame(left_frame)
+        self.website_list_frame = ctk.CTkScrollableFrame(left_frame, fg_color="#24292f")
         self.website_list_frame.pack(side="bottom", fill="both", expand=True, padx=5, pady=5)
 
         # Right Side Column (80% width)
-        right_frame = ctk.CTkFrame(self)
+        right_frame = ctk.CTkFrame(self, border_width=1, border_color="#687eff")
         right_frame.grid(row=0, column=1, rowspan=2, sticky="nsew")
 
         # Scrollable frame for credentials list
@@ -159,7 +164,9 @@ class MainScreen(ctk.CTkFrame):
         # Reset delete button state
         self.delete_button.configure(
             command=self.toggle_delete_mode,
-            text="Delete Websites"
+            text="Delete Websites",
+            fg_color="#eb5353",
+            hover_color="#A93B3B"
         )
 
     def toggle_delete_mode(self):
@@ -219,6 +226,7 @@ class MainScreen(ctk.CTkFrame):
         """
         Load credentials for a specific website with edit functionality
         """
+
         self.selected_website_id = website_id
 
         # Clear existing credentials
@@ -240,11 +248,11 @@ class MainScreen(ctk.CTkFrame):
         else:
             # If credentials exist, load and display them
             for credential in credentials:
-                credential_frame = ctk.CTkFrame(self.credentials_list_frame)
-                credential_frame.pack(padx=5, pady=5, fill="x")
+                credential_frame = ctk.CTkFrame(self.credentials_list_frame, border_width=1, border_color="#80b3ff", bg_color="#303030", fg_color="#303030")
+                credential_frame.pack(padx=5, pady=7, fill="x")
 
                 # Credential header (link, edit, delete)
-                header_frame = ctk.CTkFrame(credential_frame, fg_color="#2c2c2c")
+                header_frame = ctk.CTkFrame(credential_frame, fg_color="transparent")
                 header_frame.pack(fill="x", padx=5, pady=2)
 
                 # Credential link
@@ -256,13 +264,13 @@ class MainScreen(ctk.CTkFrame):
                     fg_color="transparent",
                     text_color="#00b8d9",
                     cursor="hand2",
-                    font=("", 14)
+                    font=("", 16)
                 )
                 credential_link.pack(side="left", padx=5, pady=2)
                 credential_link.bind("<Button-1>", lambda event, url=credential.saved_link: self.open_url(url))
 
                 # Credential details (login, password)
-                details_frame = ctk.CTkFrame(credential_frame, bg_color="#2c2c2c", fg_color="#2c2c2c")
+                details_frame = ctk.CTkFrame(credential_frame, bg_color="transparent", fg_color="transparent")
                 details_frame.pack(fill="x", padx=5, pady=2)
 
                 delete_button = ctk.CTkButton(
@@ -270,11 +278,10 @@ class MainScreen(ctk.CTkFrame):
                     text="Delete",
                     width=100,
                     height=40,
-                    fg_color="#00b8d9",
-                    hover_color="#007d8c",
-                    font=("", 14),
-                    command=lambda cred_id=credential.id, frame=details_frame:
-                    self.handle_delete_button(cred_id, frame)
+                    fg_color="#eb5353",
+                    hover_color="#A93B3B",
+                    text_color="#080202",
+                    font=ctk.CTkFont(family="", size=14, weight="bold"),
                 )
                 delete_button.pack(side="right", padx=5, pady=2)
 
@@ -284,14 +291,15 @@ class MainScreen(ctk.CTkFrame):
                     text="Edit",
                     width=100,
                     height=40,
-                    fg_color="#00b8d9",
-                    hover_color="#007d8c",
-                    font=("", 14)
+                    fg_color="#f9d923",
+                    hover_color="#B39C19",
+                    text_color="#080202",
+                    font=ctk.CTkFont(family="", size=14, weight="bold")
                 )
                 edit_button.pack(side="right", padx=5, pady=2)
 
                 # Login section
-                login_label = ctk.CTkLabel(details_frame, text="Login:", font=("", 14), anchor="w", bg_color="#2c2c2c",
+                login_label = ctk.CTkLabel(details_frame, text="Login:", font=("", 14), anchor="w", bg_color="transparent",
                                            text_color="#00b8d9")
                 login_label.pack(side="left", padx=5, pady=2)
 
@@ -307,7 +315,7 @@ class MainScreen(ctk.CTkFrame):
                     text="Copy",
                     width=80,
                     height=40,
-                    font=("", 14),
+                    font=("", 15),
                     fg_color="#3b3b3b",
                     bg_color="#2c2c2c",
                     hover_color="#007d8c",
@@ -317,11 +325,11 @@ class MainScreen(ctk.CTkFrame):
                 login_copy_button.pack(side="left", padx=5, pady=2)
 
                 # Password section
-                details_frame2 = ctk.CTkFrame(credential_frame, bg_color="#2c2c2c", fg_color="#2c2c2c")
+                details_frame2 = ctk.CTkFrame(credential_frame, bg_color="transparent", fg_color="transparent")
                 details_frame2.pack(fill="x", padx=5, pady=2)
 
                 password_label = ctk.CTkLabel(details_frame2, text="Password:", font=("", 14), anchor="w",
-                                              bg_color="#2c2c2c", text_color="#00b8d9")
+                                              bg_color="transparent", text_color="#00b8d9")
                 password_label.pack(side="left", padx=5, pady=2)
 
                 password_text = ctk.CTkEntry(details_frame2, placeholder_text=credential.password, font=("", 14),
@@ -334,7 +342,7 @@ class MainScreen(ctk.CTkFrame):
                     text="Copy",
                     width=80,
                     height=40,
-                    font=("", 14),
+                    font=("", 15),
                     fg_color="#3b3b3b",
                     bg_color="#2c2c2c",
                     hover_color="#007d8c",
@@ -343,8 +351,38 @@ class MainScreen(ctk.CTkFrame):
                 )
                 password_copy_button.pack(side="left", padx=5, pady=2)
 
+                def handle_delete_button(credential_id, delete_frame, cred_f):
+                    # Check if the sure button is already present
+                    sure_button_exists = any(
+                        isinstance(child, ctk.CTkButton) and child.cget("text") == "Sure?"
+                        for child in delete_frame.winfo_children()
+                    )
+
+                    if not sure_button_exists:
+                        # If no sure button, show confirmation
+                        cred_f.configure(border_color="#c42131", fg_color="#2e2222")
+
+                        self.sure_delete_button = ctk.CTkButton(
+                            delete_frame,
+                            text="Sure?",
+                            width=100,
+                            height=40,
+                            fg_color="#c42131",  # Bright red to indicate danger
+                            hover_color="#9d1a27",
+                            font=ctk.CTkFont(family="", size=14, weight="bold"),
+                            text_color="#080202",
+                            command=lambda: self.confirm_delete(credential_id, delete_frame)
+                        )
+                        self.sure_delete_button.pack(side="right", padx=5, pady=2)
+                    else:
+                        # If sure button exists, remove it (cancel delete)
+                        cred_f.configure(border_color="#80b3ff", fg_color="#303030")
+                        for child in delete_frame.winfo_children():
+                            if isinstance(child, ctk.CTkButton) and child.cget("text") == "Sure?":
+                                child.destroy()
+
                 # Edit functionality
-                def toggle_edit(cred_id, login_entry, password_entry, edit_btn):
+                def toggle_edit(cred_id, login_entry, password_entry, edit_btn, cred_f, ll , lb):
                     if edit_btn.cget("text") == "Edit":
                         # Switch to edit mode
                         login_entry.configure(state="normal")
@@ -357,6 +395,9 @@ class MainScreen(ctk.CTkFrame):
                         password_entry.delete(0, 'end')
                         password_entry.insert(0, password_entry.cget("placeholder_text"))
 
+                        ll.configure(text_color="#f9d923")
+                        lb.configure(text_color="#f9d923")
+                        cred_f.configure(border_color="#f9d923", fg_color="#2e2c22")
                         edit_btn.configure(text="Save")
                     else:
                         # Save changes
@@ -376,16 +417,24 @@ class MainScreen(ctk.CTkFrame):
                             credential.password = new_password
                             login_entry.configure(state="disabled")
                             password_entry.configure(state="disabled")
+                            ll.configure(text_color="#00b8d9")
+                            lb.configure(text_color="#00b8d9")
+                            cred_f.configure(border_color="#80b3ff", fg_color="#303030")
                             edit_btn.configure(text="Edit")
                         else:
                             # Optionally handle edit failure (show error message)
                             print("Failed to update credential")
 
+                delete_button.configure(
+                    command=lambda cred_id=credential.id, frame=details_frame, cred_f=credential_frame:
+                    handle_delete_button(cred_id, frame, cred_f)
+                )
+
                 # Bind edit button to toggle function
                 edit_button.configure(
                     command=lambda btn=edit_button, login=login_text,
-                                   pwd=password_text, cred_id=credential.id:
-                    toggle_edit(cred_id, login, pwd, btn)
+                                   pwd=password_text, cred_id=credential.id, cred_f=credential_frame, ll=login_label, pl=password_label,:
+                    toggle_edit(cred_id, login, pwd, btn, cred_f, ll, pl)
                 )
 
     def filter_websites(self, event=None):
@@ -433,20 +482,6 @@ class MainScreen(ctk.CTkFrame):
             for widget in self.credentials_list_frame.winfo_children():
                 widget.destroy()
 
-    def show_delete_confirmation(self, credential_id, delete_frame):
-        # Create a confirmation button
-        self.sure_delete_button = ctk.CTkButton(
-            delete_frame,
-            text="Sure?",
-            width=100,
-            height=40,
-            fg_color="#FF4500",  # Bright red to indicate danger
-            hover_color="#FF6347",
-            font=("", 14),
-            command=lambda: self.confirm_delete(credential_id, delete_frame)
-        )
-        self.sure_delete_button.pack(side="right", padx=5, pady=2)
-
     def confirm_delete(self, credential_id, delete_frame):
         # Perform the actual deletion
         success = self.credentialController.delete(credential_id)
@@ -456,22 +491,6 @@ class MainScreen(ctk.CTkFrame):
             if self.selected_website_id:
                 self.load_credentials(self.selected_website_id)
             # Optionally, you can add a success message or toast notification
-
-    def handle_delete_button(self, credential_id, delete_frame):
-        # Check if the sure button is already present
-        sure_button_exists = any(
-            isinstance(child, ctk.CTkButton) and child.cget("text") == "Sure?"
-            for child in delete_frame.winfo_children()
-        )
-
-        if not sure_button_exists:
-            # If no sure button, show confirmation
-            self.show_delete_confirmation(credential_id, delete_frame)
-        else:
-            # If sure button exists, remove it (cancel delete)
-            for child in delete_frame.winfo_children():
-                if isinstance(child, ctk.CTkButton) and child.cget("text") == "Sure?":
-                    child.destroy()
 
     def open_add_view(self):
         if self.current_user_id:

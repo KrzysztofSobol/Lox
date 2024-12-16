@@ -211,10 +211,12 @@ class LockDisplay(Static):
             self.animation_frame = frame
             await asyncio.sleep(0.05)
 
-
 class LoginView(Screen):
     color = reactive("white")
     CSS_PATH = "../tcss/login.tcss"
+
+    async def async_restart(self):
+        ModeController.restart_application()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -340,28 +342,44 @@ class LoginView(Screen):
             else:
                 mode_container.styles.visibility = "visible"
 
+
         elif event.button.id in ["save-mode", "save-reset-mode"]:
+
             # Get the selected mode from OptionList
+
             option_list = self.query_one(OptionList)
+
             highlighted_index = option_list.highlighted
 
             # Check if an option is actually selected
+
             if highlighted_index is not None:
+
                 # Get the text of the selected option
+
                 selected_mode = option_list.get_option_at_index(highlighted_index).prompt
 
                 # Convert mode to boolean string
+
                 mode_value = "true" if selected_mode == "GUI Mode" else "false"
 
                 # Save the mode
+
                 ModeController.save_mode(mode_value)
 
                 # Hide mode container
+
                 self.query_one("#mode-container").styles.visibility = "hidden"
 
                 # If "Save and reset" is clicked, restart the application
+
                 if event.button.id == "save-reset-mode":
-                    ModeController.restart_application()
+                    # Use create_task to run the restart asynchronously
+
+                    asyncio.create_task(self.async_restart())
+
             else:
+
                 # Optional: Notify user to select a mode
+
                 self.notify("Please select a mode", severity="warning")
