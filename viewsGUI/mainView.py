@@ -13,7 +13,7 @@ class WebsiteWidget(ctk.CTkFrame):
         self.website_id = website.id
 
         # Configure layout
-        self.pack(pady=4, fill="x")
+        self.pack(pady=4, fill="x", expand=False)
 
         # Website button
         self.website_button = ctk.CTkButton(
@@ -25,7 +25,8 @@ class WebsiteWidget(ctk.CTkFrame):
             command=lambda: on_click_callback(website.id),
             border_width=1,
             border_color="#80b3ff",
-            fg_color="#34393e"
+            fg_color="#34393e",
+            hover_color="#24292f"
         )
         self.website_button.pack(side="left", expand=True, fill="x")
 
@@ -75,6 +76,9 @@ class MainScreen(ctk.CTkFrame):
         left_frame = ctk.CTkFrame(self, border_width=1, border_color="#687eff", fg_color="#24292f")
         left_frame.grid(row=0, column=0, rowspan=2, sticky="nsew")
 
+        # Lock the column width
+        self.grid_columnconfigure(0, weight=0, minsize=500)
+
         # Top 5% of left column - Buttons
         left_top_frame = ctk.CTkFrame(left_frame, height=80, fg_color="#24292f")  # Increased height
         left_top_frame.pack(side="top", fill="x", padx=5, pady=5)
@@ -98,8 +102,8 @@ class MainScreen(ctk.CTkFrame):
             text="Add",
             width=120,
             height=50,
-            fg_color = "#4ebf71",
-            hover_color = "#37864f",
+            fg_color="#687eff",
+            hover_color="#4958B3",
             font=ctk.CTkFont(family="", size=14, weight="bold"),
             command=self.open_add_view
         )
@@ -144,6 +148,7 @@ class MainScreen(ctk.CTkFrame):
     def load_websites(self, user_id):
         self.current_user_id = user_id
         self.websites_to_delete = []  # Reset websites selected for deletion
+        self.selected_website_widget = None  # Track the currently selected website widget
 
         # Clear existing website widgets
         for widget in self.website_list_frame.winfo_children():
@@ -154,13 +159,18 @@ class MainScreen(ctk.CTkFrame):
 
         # Create WebsiteWidgets for all websites
         for website in self.all_websites:
-            WebsiteWidget(
+            website_widget = WebsiteWidget(
                 self.website_list_frame,
                 website,
                 self.load_credentials,
                 self.toggle_website_deletion,
                 delete_mode=False,  # Default to not showing switches at creation
                 initially_deleted=website.id in self.deleted_website_ids
+            )
+
+            # Modify the website button to support highlighting
+            website_widget.website_button.configure(
+                command=lambda w=website, widget=website_widget: self._on_website_click(w, widget)
             )
 
         # Reset delete button state
@@ -171,6 +181,26 @@ class MainScreen(ctk.CTkFrame):
             hover_color="#A93B3B",
             font=ctk.CTkFont(family="", size=14, weight="bold")
         )
+
+    def _on_website_click(self, website, website_widget):
+        # If there's a previously selected website, reset its color
+        if self.selected_website_widget:
+            self.selected_website_widget.website_button.configure(
+                fg_color="#34393e",  # Reset to original color
+                text_color="white",
+                hover_color="#24292f"
+            )
+
+        # Highlight the newly selected website
+        website_widget.website_button.configure(
+            fg_color="#687eff",  # Highlight color (same as Add button)
+            text_color="black",
+            hover_color="#4958B3"
+        )
+
+        # Update the selected website widget
+        self.selected_website_widget = website_widget
+        self.load_credentials(website.id)
 
     def toggle_delete_mode(self):
         delete_mode = self.delete_button.cget("text") == "Delete Websites"
@@ -283,8 +313,8 @@ class MainScreen(ctk.CTkFrame):
                     height=40,
                     fg_color="#eb5353",
                     hover_color="#A93B3B",
-                    text_color="#080202",
-                    font=ctk.CTkFont(family="", size=14),
+                    text_color="#FFFFFF",
+                    font=ctk.CTkFont(family="", size=14, weight="bold")
                 )
                 delete_button.pack(side="right", padx=5, pady=2)
 
@@ -294,10 +324,10 @@ class MainScreen(ctk.CTkFrame):
                     text="Edit",
                     width=100,
                     height=40,
-                    fg_color="#f9d923",
-                    hover_color="#B39C19",
-                    text_color="#080202",
-                    font=ctk.CTkFont(family="", size=14)
+                    fg_color="#687eff",
+                    hover_color="#4958B3",
+                    text_color="#FFFFFF",
+                    font=ctk.CTkFont(family="", size=14, weight="bold")
                 )
                 edit_button.pack(side="right", padx=5, pady=2)
 
@@ -306,12 +336,17 @@ class MainScreen(ctk.CTkFrame):
                                            text_color="#00b8d9")
                 login_label.pack(side="left", padx=5, pady=2)
 
-                login_text = ctk.CTkEntry(details_frame, placeholder_text=credential.username, font=("", 14),
+                def mask_string(input_string):
+                    return "*" * len(input_string)
+
+                login_text = ctk.CTkEntry(details_frame, placeholder_text=mask_string(credential.username), font=("", 14),
                                           state="normal", width=330)
                 login_text.configure(state="disabled")
                 login_text.pack(side="left", padx=5, pady=2)
 
                 copy_icon = tk.PhotoImage(file="viewsGUI/icons/copy.png").subsample(21, 21)
+                eye_close_icon = tk.PhotoImage(file="viewsGUI/icons/eyeClose.png").subsample(20, 20)
+                eye_open_icon = tk.PhotoImage(file="viewsGUI/icons/eyeOpen.png").subsample(20, 20)
 
                 login_copy_button = ctk.CTkButton(
                     details_frame,
@@ -322,10 +357,22 @@ class MainScreen(ctk.CTkFrame):
                     fg_color="#3b3b3b",
                     bg_color="#2c2c2c",
                     hover_color="#007d8c",
-                    image=copy_icon,
-                    command=lambda: pyperclip.copy(credential.username)
+                    image=copy_icon
                 )
                 login_copy_button.pack(side="left", padx=5, pady=2)
+
+                login_eye_button = ctk.CTkButton(
+                    details_frame,
+                    text="",
+                    width=50,
+                    height=40,
+                    font=("", 15),
+                    fg_color="#3b3b3b",
+                    bg_color="#2c2c2c",
+                    hover_color="#007d8c",
+                    image=eye_close_icon
+                )
+                login_eye_button.pack(side="left", padx=5, pady=2)
 
                 # Password section
                 details_frame2 = ctk.CTkFrame(credential_frame, bg_color="transparent", fg_color="transparent")
@@ -335,7 +382,7 @@ class MainScreen(ctk.CTkFrame):
                                               bg_color="transparent", text_color="#00b8d9")
                 password_label.pack(side="left", padx=5, pady=2)
 
-                password_text = ctk.CTkEntry(details_frame2, placeholder_text=credential.password, font=("", 14),
+                password_text = ctk.CTkEntry(details_frame2, placeholder_text=mask_string(credential.password), font=("", 14),
                                              state="normal", width=305)
                 password_text.configure(state="disabled")
                 password_text.pack(side="left", padx=5, pady=2)
@@ -349,10 +396,45 @@ class MainScreen(ctk.CTkFrame):
                     fg_color="#3b3b3b",
                     bg_color="#2c2c2c",
                     hover_color="#007d8c",
-                    image=copy_icon,
-                    command=lambda: pyperclip.copy(credential.password)
+                    image=copy_icon
                 )
                 password_copy_button.pack(side="left", padx=5, pady=2)
+
+                password_eye_button = ctk.CTkButton(
+                    details_frame2,
+                    text="",
+                    width=50,
+                    height=40,
+                    font=("", 15),
+                    fg_color="#3b3b3b",
+                    bg_color="#2c2c2c",
+                    hover_color="#007d8c",
+                    image=eye_close_icon
+                )
+                password_eye_button.pack(side="left", padx=5, pady=2)
+
+                originalLogin = ctk.CTkLabel(details_frame2, text=credential.username)
+                originalPassword = ctk.CTkLabel(details_frame2, text=credential.password)
+                originalLogin.pack_forget()
+                originalPassword.pack_forget()
+
+                def toggle_password_visibility(entry, eye_button, original_content, masked_content):
+                    if eye_button.cget("image") == eye_close_icon:
+                        # Currently masked, reveal password
+                        entry.configure(state="normal")
+                        entry.configure(placeholder_text=original_content.cget("text"))
+                        entry.configure(state="disabled")
+                        eye_button.configure(image=eye_open_icon)
+                    else:
+                        # Currently revealed, mask password
+                        entry.configure(state="normal")
+                        entry.configure(placeholder_text=mask_string(entry.cget("placeholder_text")))
+                        entry.configure(state="disabled")
+                        eye_button.configure(image=eye_close_icon)
+
+                def handle_copy_button(entry):
+                    credential_frame.focus_set()
+                    pyperclip.copy(entry.cget("text"))
 
                 def handle_delete_button(credential_id, delete_frame, cred_f):
                     # Check if the sure button is already present
@@ -385,18 +467,22 @@ class MainScreen(ctk.CTkFrame):
                                 child.destroy()
 
                 # Edit functionality
-                def toggle_edit(cred_id, login_entry, password_entry, edit_btn, cred_f, ll , lb):
+                def toggle_edit(cred_id, login_entry, password_entry, edit_btn, cred_f, ll , lb, login_eye, password_eye, ogL, ogP):
                     if edit_btn.cget("text") == "Edit":
+                        if login_eye.cget("image") == eye_close_icon:
+                            toggle_password_visibility(login_entry, login_eye, ogL, mask_string(ogL.cget("text")))
+                        if password_eye.cget("image") == eye_close_icon:
+                           toggle_password_visibility(password_entry, password_eye, ogP, mask_string(ogP.cget("text")))
                         # Switch to edit mode
                         login_entry.configure(state="normal")
                         password_entry.configure(state="normal")
 
                         # Clear any existing text and insert current credential values
                         login_entry.delete(0, 'end')
-                        login_entry.insert(0, login_entry.cget("placeholder_text"))
+                        login_entry.insert(0, ogL.cget("text"))
 
                         password_entry.delete(0, 'end')
-                        password_entry.insert(0, password_entry.cget("placeholder_text"))
+                        password_entry.insert(0, ogP.cget("text"))
 
                         ll.configure(text_color="#f9d923")
                         lb.configure(text_color="#f9d923")
@@ -412,21 +498,35 @@ class MainScreen(ctk.CTkFrame):
 
                         if success:
                             # Reload credentials to reflect changes
+                            ogL.configure(text=new_username)
+                            ogP.configure(text=new_password)
                             login_entry.delete(0, 'end')
                             password_entry.delete(0, 'end')
                             login_entry.configure(placeholder_text=new_username)
                             password_entry.configure(placeholder_text=new_password)
                             credential.username = new_username
                             credential.password = new_password
-                            login_entry.configure(state="disabled")
-                            password_entry.configure(state="disabled")
                             ll.configure(text_color="#00b8d9")
                             lb.configure(text_color="#00b8d9")
                             cred_f.configure(border_color="#80b3ff", fg_color="#242930")
                             edit_btn.configure(text="Edit")
+                            toggle_password_visibility(login_entry, login_eye, originalLogin.cget("text"),
+                                                       mask_string(credential.username))
+                            toggle_password_visibility(password_entry, password_eye, originalPassword.cget("text"),
+                                                       mask_string(credential.password))
                         else:
                             # Optionally handle edit failure (show error message)
                             print("Failed to update credential")
+
+                login_copy_button.configure(
+                    command=lambda entry=originalLogin:
+                    handle_copy_button(entry)
+                )
+
+                password_copy_button.configure(
+                    command=lambda entry=originalPassword:
+                    handle_copy_button(entry)
+                )
 
                 delete_button.configure(
                     command=lambda cred_id=credential.id, frame=details_frame, cred_f=credential_frame:
@@ -436,8 +536,26 @@ class MainScreen(ctk.CTkFrame):
                 # Bind edit button to toggle function
                 edit_button.configure(
                     command=lambda btn=edit_button, login=login_text,
-                                   pwd=password_text, cred_id=credential.id, cred_f=credential_frame, ll=login_label, pl=password_label,:
-                    toggle_edit(cred_id, login, pwd, btn, cred_f, ll, pl)
+                                   pwd=password_text, cred_id=credential.id, cred_f=credential_frame, ll=login_label, pl=password_label,
+                                   login_eye=login_eye_button, password_eye=password_eye_button, ogL=originalLogin, ogP=originalPassword:
+                    toggle_edit(cred_id, login, pwd, btn, cred_f, ll, pl, login_eye, password_eye, ogL, ogP)
+                )
+
+                password_eye_button.configure(
+                    command=lambda entry=password_text,
+                                   eyeButton=password_eye_button,
+                                   ogContent=originalPassword,
+                                   maskedContent=mask_string(originalPassword.cget("text")):
+                    toggle_password_visibility(entry, eyeButton, ogContent, maskedContent)
+                )
+
+                # Do the same for login eye button:
+                login_eye_button.configure(
+                    command=lambda entry=login_text,
+                                   eyeButton=login_eye_button,
+                                   ogContent=originalLogin,
+                                   maskedContent=mask_string(originalLogin.cget("text")):
+                    toggle_password_visibility(entry, eyeButton, ogContent, maskedContent)
                 )
 
     def filter_websites(self, event=None):
