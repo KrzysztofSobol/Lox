@@ -143,6 +143,15 @@ class MainScreen(ctk.CTkFrame):
             text_color="gray",
             font=("", 10)
         )
+
+        self.login_shortcut_label = ctk.CTkLabel(
+            self,
+            text="Ctrl + L = Login",
+            text_color="gray",
+            font=("", 10)
+        )
+
+        self.login_shortcut_label.grid(row=2, column=0, sticky="w", padx=10, pady=0)
         self.footer_label.grid(row=2, column=0, columnspan=2, pady=0)
 
     def load_websites(self, user_id):

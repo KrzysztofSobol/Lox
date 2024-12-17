@@ -39,7 +39,6 @@ class App(ctk.CTk):
         self.bind("<Control-l>", self.return_to_login)
 
     def show_frame(self, cont):
-        """Raise the specified frame to the top"""
         frame = self.frames[cont]
         frame.tkraise()
 

@@ -42,7 +42,6 @@ class AddView(ctk.CTkFrame):
         self.password_entry = ctk.CTkEntry(
             self.container,
             placeholder_text="Enter password",
-            show="*",
             width=400
         )
         self.password_entry.pack(padx=10, pady=5, fill="x")
@@ -85,10 +84,19 @@ class AddView(ctk.CTkFrame):
         self.footer_label = ctk.CTkLabel(
             self,
             text="© 2024 Password Manager",
-            text_color="#1e1e1e",
+            text_color="gray",
             font=("", 10)
         )
-        self.footer_label.grid(row=2, column=0, columnspan=2, pady=10)
+
+        self.login_shortcut_label = ctk.CTkLabel(
+            self,
+            text="Ctrl + L = Login",
+            text_color="gray",
+            font=("", 10)
+        )
+
+        self.login_shortcut_label.grid(row=2, column=0, sticky="w", padx=10, pady=0)
+        self.footer_label.grid(row=2, column=0, columnspan=2, pady=0)
 
     def set_current_user(self, user_id):
         """
