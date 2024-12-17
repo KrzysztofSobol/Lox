@@ -85,7 +85,7 @@ class LoginScreen(ctk.CTkFrame):
             self.top_left_frame,
             text="Mode",
             width=80,
-            fg_color="#687eff",
+            fg_color="#454a50", #fg_color="#687eff",
             bg_color="#133b83",
             hover_color="#4958B3",
             command=self.toggle_mode_window

@@ -7,13 +7,13 @@ class AddView(ctk.CTkFrame):
         self.controller = controller
         self.credentialController = Container.getCredentialController()
         self.current_user_id = None
-
+        self.configure(fg_color="#191D21")
         # Center the container on the screen
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
         # Create the main container
-        self.container = ctk.CTkFrame(self, width=600, height=400, corner_radius=10)
+        self.container = ctk.CTkFrame(self, width=600, height=400, corner_radius=10, border_width=1, border_color="#687eff", fg_color="#24292f")
         self.container.grid(row=0, column=0, padx=20, pady=20)
 
         # URL Input
@@ -65,8 +65,9 @@ class AddView(ctk.CTkFrame):
             button_frame,
             text="Cancel",
             command=self.cancel_and_return,
-            fg_color="gray",
-            hover_color="darkgray"
+            fg_color="#eb5353",
+            hover_color="#A93B3B",
+            font=ctk.CTkFont(family="", size=14, weight="bold")
         )
         self.cancel_button.pack(side="left", padx=5, expand=True, fill="x")
 
@@ -75,15 +76,16 @@ class AddView(ctk.CTkFrame):
             button_frame,
             text="Save",
             command=self.save_credential,
-            fg_color="#00b8d9",
-            hover_color="#007d8c"
+            fg_color="#687eff",
+            hover_color="#4958B3",
+            font=ctk.CTkFont(family="", size=14, weight="bold")
         )
         self.save_button.pack(side="right", padx=5, expand=True, fill="x")
 
         self.footer_label = ctk.CTkLabel(
             self,
             text="© 2024 Password Manager",
-            text_color="gray",
+            text_color="#1e1e1e",
             font=("", 10)
         )
         self.footer_label.grid(row=2, column=0, columnspan=2, pady=10)
