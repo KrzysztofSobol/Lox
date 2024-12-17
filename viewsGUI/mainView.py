@@ -356,7 +356,7 @@ class MainScreen(ctk.CTkFrame):
                     font=("", 15),
                     fg_color="#3b3b3b",
                     bg_color="#232323",
-                    hover_color="#007d8c",
+                    hover_color="#232323",
                     image=copy_icon
                 )
                 login_copy_button.pack(side="left", padx=5, pady=2)
@@ -395,7 +395,7 @@ class MainScreen(ctk.CTkFrame):
                     font=("", 15),
                     fg_color="#3b3b3b",
                     bg_color="#2c2c2c",
-                    hover_color="#007d8c",
+                    hover_color="#232323",
                     image=copy_icon
                 )
                 password_copy_button.pack(side="left", padx=5, pady=2)
