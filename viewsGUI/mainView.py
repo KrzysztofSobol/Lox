@@ -275,7 +275,7 @@ class MainScreen(ctk.CTkFrame):
                 self.credentials_list_frame,
                 text="No credentials found for this website",
                 font=("", 16),
-                text_color="red"
+                text_color="#eb5353"
             )
             no_credentials_label.pack(padx=10, pady=20)
         else:
@@ -355,7 +355,7 @@ class MainScreen(ctk.CTkFrame):
                     height=40,
                     font=("", 15),
                     fg_color="#3b3b3b",
-                    bg_color="#2c2c2c",
+                    bg_color="#232323",
                     hover_color="#007d8c",
                     image=copy_icon
                 )
@@ -369,7 +369,7 @@ class MainScreen(ctk.CTkFrame):
                     font=("", 15),
                     fg_color="#3b3b3b",
                     bg_color="#2c2c2c",
-                    hover_color="#007d8c",
+                    hover_color="#232323",
                     image=eye_close_icon
                 )
                 login_eye_button.pack(side="left", padx=5, pady=2)
@@ -408,7 +408,7 @@ class MainScreen(ctk.CTkFrame):
                     font=("", 15),
                     fg_color="#3b3b3b",
                     bg_color="#2c2c2c",
-                    hover_color="#007d8c",
+                    hover_color="#232323",
                     image=eye_close_icon
                 )
                 password_eye_button.pack(side="left", padx=5, pady=2)
@@ -436,6 +436,18 @@ class MainScreen(ctk.CTkFrame):
                     credential_frame.focus_set()
                     pyperclip.copy(entry.cget("text"))
 
+
+                def confirm_delete(credential_id, cred_f):
+                    # Perform the actual deletion
+                    success = self.credentialController.delete(credential_id)
+
+                    if success:
+                        cred_f.destroy()
+                        anyCredentialsCheck = self.credentialController.getCredentialsByWebsite(website_id)
+                        if not anyCredentialsCheck:
+                            self.load_credentials(website_id)
+
+
                 def handle_delete_button(credential_id, delete_frame, cred_f):
                     # Check if the sure button is already present
                     sure_button_exists = any(
@@ -456,7 +468,7 @@ class MainScreen(ctk.CTkFrame):
                             hover_color="#9d1a27",
                             font=ctk.CTkFont(family="", size=14),
                             text_color="#080202",
-                            command=lambda: self.confirm_delete(credential_id, delete_frame)
+                            command=lambda: confirm_delete(credential_id, cred_f)
                         )
                         self.sure_delete_button.pack(side="right", padx=5, pady=2)
                     else:
@@ -602,16 +614,6 @@ class MainScreen(ctk.CTkFrame):
             # Also clear credentials list
             for widget in self.credentials_list_frame.winfo_children():
                 widget.destroy()
-
-    def confirm_delete(self, credential_id, delete_frame):
-        # Perform the actual deletion
-        success = self.credentialController.delete(credential_id)
-
-        if success:
-            # If deletion successful, reload credentials and remove confirmation button
-            if self.selected_website_id:
-                self.load_credentials(self.selected_website_id)
-            # Optionally, you can add a success message or toast notification
 
     def open_add_view(self):
         if self.current_user_id:
