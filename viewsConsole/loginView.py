@@ -9,8 +9,8 @@ from controllers.UserController import UserController
 from database.database import init_db
 from repositories.UserRepository import UserRepository
 from viewsConsole.dashboardView import DashboardView
-from containerService.container import Container
-from containerService.modeController import ModeController
+from utils.DependencyInjector import Injector
+from utils.ModeController import ModeController
 
 class LoginView:
     pass
@@ -220,7 +220,7 @@ class LoginView(Screen):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.userController = Container.getUserController()
+        self.userController = Injector.getUserController()
 
     def compose(self) -> ComposeResult:
         # Keep the existing composition, but update the mode-related elements
@@ -342,44 +342,18 @@ class LoginView(Screen):
             else:
                 mode_container.styles.visibility = "visible"
 
-
         elif event.button.id in ["save-mode", "save-reset-mode"]:
 
-            # Get the selected mode from OptionList
-
             option_list = self.query_one(OptionList)
-
             highlighted_index = option_list.highlighted
 
-            # Check if an option is actually selected
-
             if highlighted_index is not None:
-
-                # Get the text of the selected option
-
                 selected_mode = option_list.get_option_at_index(highlighted_index).prompt
-
-                # Convert mode to boolean string
-
                 mode_value = "true" if selected_mode == "GUI Mode" else "false"
-
-                # Save the mode
-
                 ModeController.save_mode(mode_value)
-
-                # Hide mode container
-
                 self.query_one("#mode-container").styles.visibility = "hidden"
 
-                # If "Save and reset" is clicked, restart the application
-
                 if event.button.id == "save-reset-mode":
-                    # Use create_task to run the restart asynchronously
-
                     asyncio.create_task(self.async_restart())
-
             else:
-
-                # Optional: Notify user to select a mode
-
                 self.notify("Please select a mode", severity="warning")

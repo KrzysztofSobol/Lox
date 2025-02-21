@@ -1,8 +1,6 @@
 # UserRepository.py
 import sqlite3
-import hashlib
 from datetime import datetime
-from cryptography.fernet import Fernet
 from models.UserModel import User
 
 class UserRepository:
@@ -10,25 +8,35 @@ class UserRepository:
         self.conn = connection
         self.cursor = connection.cursor()
 
-    def createUser(self, username: str, password: str) -> User:
-        encryption_key = Fernet.generate_key()
-        password_hash = hashlib.sha256(password.encode()).hexdigest()
+    def createUser(self, user_data: dict) -> User:
+        """
+        Expects a dictionary with keys:
+          - username
+          - password_hash
+          - salt
+          - wrapped_encryption_key
+        """
         current_time = datetime.now()
-
         try:
             self.cursor.execute('''
-                INSERT INTO users (username, password_hash, encryption_key)
-                VALUES (?, ?, ?)
-            ''', (username, password_hash, encryption_key.decode()))
-
+                INSERT INTO users (username, password_hash, salt, wrapped_encryption_key, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (
+                user_data['username'],
+                user_data['password_hash'],
+                user_data['salt'],
+                user_data['wrapped_encryption_key'],
+                current_time,
+                current_time
+            ))
             self.conn.commit()
             user_id = self.cursor.lastrowid
-
             return User(
                 id=user_id,
-                username=username,
-                password_hash=password_hash,
-                encryption_key=encryption_key,
+                username=user_data['username'],
+                password_hash=user_data['password_hash'],
+                salt=user_data['salt'],
+                wrapped_encryption_key=user_data['wrapped_encryption_key'],
                 created_at=current_time,
                 updated_at=current_time
             )
@@ -36,19 +44,19 @@ class UserRepository:
             raise ValueError("Username already exists")
 
     def getUserByUsername(self, username: str) -> User | None:
-        self.cursor.execute(
-            'SELECT * FROM users WHERE username = ?',
-            (username,)
-        )
+        self.cursor.execute('''
+            SELECT id, username, password_hash, salt, wrapped_encryption_key, created_at, updated_at
+            FROM users WHERE username = ?
+        ''', (username,))
         user_data = self.cursor.fetchone()
-
         if user_data:
             return User(
                 id=user_data[0],
                 username=user_data[1],
                 password_hash=user_data[2],
-                encryption_key=user_data[3].encode(),
-                created_at=datetime.now(),
-                updated_at=datetime.now()
+                salt=user_data[3],
+                wrapped_encryption_key=user_data[4],
+                created_at=user_data[5],
+                updated_at=user_data[6]
             )
         return None

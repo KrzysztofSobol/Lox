@@ -7,6 +7,7 @@ class User:
     id: Optional[int]
     username: str
     password_hash: str
-    encryption_key: bytes
+    salt: str
+    wrapped_encryption_key: str
     created_at: datetime
     updated_at: datetime

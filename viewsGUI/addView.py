@@ -1,11 +1,11 @@
 import customtkinter as ctk
-from containerService.container import Container
+from utils.DependencyInjector import Injector
 
 class AddView(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
-        self.credentialController = Container.getCredentialController()
+        self.credentialController = Injector.getCredentialController()
         self.current_user_id = None
         self.configure(fg_color="#191D21")
         # Center the container on the screen

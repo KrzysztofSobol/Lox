@@ -3,7 +3,7 @@ from textual.app import App
 from viewsConsole.addView import AddView
 from viewsConsole.dashboardView import DashboardView
 from viewsConsole.loginView import LoginView
-from containerService.container import Container
+from utils.DependencyInjector import Injector
 
 class ModesApp(App):
     BINDINGS = [
@@ -18,7 +18,7 @@ class ModesApp(App):
 
     def __init__(self):
         super().__init__()
-        Container.initialize()
+        Injector.initialize()
 
     def action_switch_screen(self, screen_name: str) -> None:
         if screen_name in self.SCREENS:

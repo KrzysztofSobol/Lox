@@ -7,7 +7,7 @@ from controllers.UserController import UserController
 from controllers.WebsiteController import WebsiteController
 from controllers.CredentialController import CredentialController
 
-class Container:
+class Injector:
     _instances: Dict[str, Any] = {}
     _initialized = False
 
@@ -60,4 +60,5 @@ class Container:
         return cls.getInstance('credential_controller',
                                lambda: CredentialController(
                                    cls.getCredentialRepository(),
-                                   cls.getWebsiteController()))
+                                   cls.getWebsiteController(),
+                                   encryption_key=None))

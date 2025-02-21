@@ -2,7 +2,7 @@ from textual.containers import Grid, Horizontal, VerticalScroll
 from textual.screen import ModalScreen
 from textual.widgets import Footer, Input, Button, Label
 from textual.app import ComposeResult
-from containerService.container import Container as ServiceContainer
+from utils.DependencyInjector import Injector as ServiceContainer
 
 class AddView(ModalScreen[int | None]):
     CSS_PATH = "../tcss/addView.tcss"

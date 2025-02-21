@@ -7,6 +7,7 @@ class WebsiteRepository:
         self.conn = connection
         self.cursor = connection.cursor()
 
+    # unused but ill leave it just in case
     def get_user_website_by_id(self, user_id: int, website_id: int) -> Website:
         self.cursor.execute('''
             SELECT id, user_id, name 
@@ -46,9 +47,9 @@ class WebsiteRepository:
 
     def create(self, website: Website) -> Website:
         self.cursor.execute('''
-            INSERT INTO websites (user_id, name, url)
-            VALUES (?, ?, ?)
-        ''', (website.user_id, website.name, website.url))
+            INSERT INTO websites (user_id, name, url, created_at, updated_at)
+            VALUES (?, ?, ?, ? ,?)
+        ''', (website.user_id, website.name, website.url, website.created_at, website.updated_at))
 
         self.conn.commit()
         website.id = self.cursor.lastrowid

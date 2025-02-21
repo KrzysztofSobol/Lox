@@ -2,7 +2,7 @@ import tkinter as tk
 import customtkinter as ctk
 import pyperclip
 
-from containerService.container import Container
+from utils.DependencyInjector import Injector
 from viewsGUI.addView import AddView
 
 class WebsiteWidget(ctk.CTkFrame):
@@ -30,7 +30,7 @@ class WebsiteWidget(ctk.CTkFrame):
         )
         self.website_button.pack(side="left", expand=True, fill="x")
 
-        # Delete switch (always created)
+        # Delete switch
         self.delete_switch = ctk.CTkSwitch(self, text="Delete", width=5)
         self.delete_switch.configure(command=self._toggle_delete)
 
@@ -57,12 +57,12 @@ class MainScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.websites_to_delete = []
-        self.controller = controller  # Store controller reference
-        self.websiteController = Container.getWebsiteController()
-        self.credentialController = Container.getCredentialController()
-        self.current_user_id = None  # Will be set when user logs in
-        self.all_websites = []  # Store all websites for filtering
-        self.selected_website_id = None  # Track currently selected website
+        self.controller = controller
+        self.websiteController = Injector.getWebsiteController()
+        self.credentialController = Injector.getCredentialController()
+        self.current_user_id = None
+        self.all_websites = []
+        self.selected_website_id = None
         self.deleted_website_ids = set()
         self.configure(fg_color="#1e1e1e")
 
@@ -72,7 +72,7 @@ class MainScreen(ctk.CTkFrame):
         self.grid_columnconfigure(1, weight=4)  # Right column (80% width)
         self.grid_rowconfigure(1, weight=1)  # Make main content row expandable
 
-        # Left Side Column (20% width) - Previous implementation remains the same
+        # Left Side Column (20% width)
         left_frame = ctk.CTkFrame(self, border_width=1, border_color="#687eff", fg_color="#24292f")
         left_frame.grid(row=0, column=0, rowspan=2, sticky="nsew")
 
@@ -91,8 +91,8 @@ class MainScreen(ctk.CTkFrame):
         self.delete_button = ctk.CTkButton(
             left_top_frame,
             text="Delete",
-            width=120,  # Increased from 100
-            height=50  # Increased from 40
+            width=120,
+            height=50
         )
         self.delete_button.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 
@@ -224,7 +224,7 @@ class MainScreen(ctk.CTkFrame):
                 if isinstance(container, WebsiteWidget):
                     container._is_delete_mode = True
                     container.delete_switch.pack(side="right", padx=(6,6))
-                    # Apply the previously selected state (if any)
+                    # Apply the previously selected state
                     if container.website_id in self.deleted_website_ids:
                         container.delete_switch.select()
                     else:
@@ -252,9 +252,6 @@ class MainScreen(ctk.CTkFrame):
                         container.delete_switch.pack_forget()
 
     def toggle_website_deletion(self, website):
-        """
-        Track websites selected for deletion
-        """
         if website.id in self.deleted_website_ids:
             self.deleted_website_ids.remove(website.id)
             if website.id in self.websites_to_delete:
@@ -264,11 +261,8 @@ class MainScreen(ctk.CTkFrame):
             if website.id not in self.websites_to_delete:
                 self.websites_to_delete.append(website.id)
 
+    # Probably the worst thing I have ever written is this function. That's what happens when u got no time.
     def load_credentials(self, website_id):
-        """
-        Load credentials for a specific website with edit functionality
-        """
-
         self.selected_website_id = website_id
 
         # Clear existing credentials
@@ -348,7 +342,7 @@ class MainScreen(ctk.CTkFrame):
                 def mask_string(input_string):
                     return "*" * len(input_string)
 
-                login_text = ctk.CTkEntry(details_frame, placeholder_text=mask_string(credential.username), font=("", 14),
+                login_text = ctk.CTkEntry(details_frame, placeholder_text=mask_string(credential.decrypted_username), font=("", 14),
                                           state="normal", width=330)
                 login_text.configure(state="disabled")
                 login_text.pack(side="left", padx=5, pady=2)
@@ -391,7 +385,7 @@ class MainScreen(ctk.CTkFrame):
                                               bg_color="transparent", text_color="#00b8d9")
                 password_label.pack(side="left", padx=5, pady=2)
 
-                password_text = ctk.CTkEntry(details_frame2, placeholder_text=mask_string(credential.password), font=("", 14),
+                password_text = ctk.CTkEntry(details_frame2, placeholder_text=mask_string(credential.decrypted_password), font=("", 14),
                                              state="normal", width=305)
                 password_text.configure(state="disabled")
                 password_text.pack(side="left", padx=5, pady=2)
@@ -422,8 +416,8 @@ class MainScreen(ctk.CTkFrame):
                 )
                 password_eye_button.pack(side="left", padx=5, pady=2)
 
-                originalLogin = ctk.CTkLabel(details_frame2, text=credential.username)
-                originalPassword = ctk.CTkLabel(details_frame2, text=credential.password)
+                originalLogin = ctk.CTkLabel(details_frame2, text=credential.decrypted_username)
+                originalPassword = ctk.CTkLabel(details_frame2, text=credential.decrypted_password)
                 originalLogin.pack_forget()
                 originalPassword.pack_forget()
 
@@ -511,8 +505,8 @@ class MainScreen(ctk.CTkFrame):
                         edit_btn.configure(text="Save")
                     else:
                         # Save changes
-                        new_username = login_entry.get() or credential.username
-                        new_password = password_entry.get() or credential.password
+                        new_username = login_entry.get() or credential.decrypted_username
+                        new_password = password_entry.get() or credential.decrypted_password
 
                         # Call edit method
                         success = self.credentialController.edit(cred_id, new_username, new_password)
@@ -532,12 +526,9 @@ class MainScreen(ctk.CTkFrame):
                             cred_f.configure(border_color="#80b3ff", fg_color="#242930")
                             edit_btn.configure(text="Edit")
                             toggle_password_visibility(login_entry, login_eye, originalLogin.cget("text"),
-                                                       mask_string(credential.username))
+                                                       mask_string(credential.decrypted_username))
                             toggle_password_visibility(password_entry, password_eye, originalPassword.cget("text"),
-                                                       mask_string(credential.password))
-                        else:
-                            # Optionally handle edit failure (show error message)
-                            print("Failed to update credential")
+                                                       mask_string(credential.decrypted_password))
 
                 login_copy_button.configure(
                     command=lambda entry=originalLogin:
@@ -580,9 +571,6 @@ class MainScreen(ctk.CTkFrame):
                 )
 
     def filter_websites(self, event=None):
-        """
-        Filter websites based on search input while preserving delete mode and switch states
-        """
         # Clear existing website widgets
         for widget in self.website_list_frame.winfo_children():
             widget.destroy()
@@ -612,9 +600,6 @@ class MainScreen(ctk.CTkFrame):
             )
 
     def refresh_website_list(self):
-        """
-        Refresh the website list if a user is logged in
-        """
         if self.current_user_id:
             self.load_websites(self.current_user_id)
             # Clear search entry

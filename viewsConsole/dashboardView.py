@@ -5,11 +5,11 @@ from textual.css.query import NoMatches
 from textual.widgets import Static, Footer, Button, Switch, Input
 from textual.containers import Container as TextualContainer
 from textual.reactive import reactive
-from containerService.container import Container as ServiceContainer
+from utils.DependencyInjector import Injector as ServiceInjector
 import pyperclip
 
-website_controller = ServiceContainer.getWebsiteController()
-credential_controller = ServiceContainer.getCredentialController()
+website_controller = ServiceInjector.getWebsiteController()
+credential_controller = ServiceInjector.getCredentialController()
 
 class CredentialItem(Static):
     username = reactive("")
@@ -65,34 +65,35 @@ class CredentialItem(Static):
             log(f"Error in watch_password: {e}")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        deleteButton = self.query_one("#delete-credential-button")
-        deleteCancelButton = self.query_one("#delete-cancel-credential-button")
-        deleteSureButton = self.query_one("#delete-sure-credential-button")
-        loginButton = self.query_one("#copy-button-login")
-        passwordButton = self.query_one("#copy-button-password")
-        loginEditInput = self.query_one("#edit-input-login")
-        passwordEditInput = self.query_one("#edit-input-password")
-        editButton = self.query_one("#edit-credential-button")
-        editCancelButton = self.query_one("#edit-confirm-credential-button")
-        credentialRow = self.query_one("#row")
+        # Get UI elements
+        elements = {
+            "row": self.query_one("#row"),
+            "login_button": self.query_one("#copy-button-login"),
+            "password_button": self.query_one("#copy-button-password"),
+            "login_input": self.query_one("#edit-input-login"),
+            "password_input": self.query_one("#edit-input-password"),
+            "edit_button": self.query_one("#edit-credential-button"),
+            "edit_confirm_button": self.query_one("#edit-confirm-credential-button"),
+            "delete_button": self.query_one("#delete-credential-button"),
+            "delete_cancel_button": self.query_one("#delete-cancel-credential-button"),
+            "delete_confirm_button": self.query_one("#delete-sure-credential-button"),
+        }
 
-        if event.button.id == "copy-button-login" or event.button.id == "copy-button-password":
+        button_id = event.button.id
+
+        # Copy to clipboard
+        if button_id in ["copy-button-login", "copy-button-password"]:
             pyperclip.copy(event.button.label)
-        elif event.button.id == "edit-credential-button":
-            loginButton.display = False
-            passwordButton.display = False
-            loginEditInput.display = True
-            passwordEditInput.display = True
-            editButton.display = False
-            editCancelButton.display = True
-            deleteButton.display = True
-            deleteCancelButton.display = False
-            deleteSureButton.display = False
+            return
 
-            credentialRow.styles.border = ("round", "#F9D923")
-        if event.button.id == "edit-confirm-credential-button":
-            new_username = self.query_one("#edit-input-login").value
-            new_password = self.query_one("#edit-input-password").value
+        # Handle edit mode
+        if button_id == "edit-credential-button":
+            self._set_edit_mode(elements, True)
+
+        # Handle edit confirmation
+        elif button_id == "edit-confirm-credential-button":
+            new_username = elements["login_input"].value
+            new_password = elements["password_input"].value
 
             success = credential_controller.edit(
                 credential_id=self.credential_id,
@@ -101,40 +102,70 @@ class CredentialItem(Static):
             )
 
             if success:
-                self.username = success.username
-                self.password = success.password
+                self.username = success.decrypted_username
+                self.password = success.decrypted_password
 
-            loginButton.display = True
-            passwordButton.display = True
-            loginEditInput.display = False
-            passwordEditInput.display = False
-            editCancelButton.display = False
-            editButton.display = True
-            credentialRow.styles.border = ("round", "#80B3FF")
-        elif event.button.id == "delete-credential-button":
-            loginButton.display = True
-            passwordButton.display = True
-            loginEditInput.display = False
-            passwordEditInput.display = False
-            deleteButton.display = False
-            deleteCancelButton.display = True
-            deleteSureButton.display = True
-            editCancelButton.display = False
-            editButton.display = True
-            credentialRow.styles.border = ("round", "#EB5353")
-        elif event.button.id == "delete-cancel-credential-button":
-            deleteButton.display = True
-            deleteCancelButton.display = False
-            deleteSureButton.display = False
-            credentialRow.styles.border = ("round", "#80B3FF")
-        elif event.button.id == "delete-sure-credential-button":
+            self._set_edit_mode(elements, False)
+
+        # Handle delete button
+        elif button_id == "delete-credential-button":
+            self._set_delete_mode(elements, True)
+
+        # Handle delete cancellation
+        elif button_id == "delete-cancel-credential-button":
+            self._set_delete_mode(elements, False)
+
+        # Handle delete confirmation
+        elif button_id == "delete-sure-credential-button":
             if credential_controller.delete(self.credential_id):
                 self.remove()
                 dashboard_view = self.screen
                 dashboard_view.refresh_credentials()
-            deleteButton.display = True
-            deleteCancelButton.display = False
-            deleteSureButton.display = False
+            self._set_delete_mode(elements, False)
+
+    def _set_edit_mode(self, elements, enable: bool):
+        if enable:
+            # Enable edit mode
+            elements["login_button"].display = False
+            elements["password_button"].display = False
+            elements["login_input"].display = True
+            elements["password_input"].display = True
+            elements["edit_button"].display = False
+            elements["edit_confirm_button"].display = True
+            elements["delete_button"].display = True
+            elements["delete_cancel_button"].display = False
+            elements["delete_confirm_button"].display = False
+            elements["row"].styles.border = ("round", "#F9D923")  # Yellow for edit
+        else:
+            # Disable edit mode (back to normal)
+            elements["login_button"].display = True
+            elements["password_button"].display = True
+            elements["login_input"].display = False
+            elements["password_input"].display = False
+            elements["edit_confirm_button"].display = False
+            elements["edit_button"].display = True
+            elements["row"].styles.border = ("round", "#80B3FF")  # Blue for normal
+
+    def _set_delete_mode(self, elements, enable: bool):
+        """Set the UI to delete confirmation mode or normal mode"""
+        if enable:
+            # Enable delete confirmation mode
+            elements["login_button"].display = True
+            elements["password_button"].display = True
+            elements["login_input"].display = False
+            elements["password_input"].display = False
+            elements["delete_button"].display = False
+            elements["delete_cancel_button"].display = True
+            elements["delete_confirm_button"].display = True
+            elements["edit_confirm_button"].display = False
+            elements["edit_button"].display = True
+            elements["row"].styles.border = ("round", "#EB5353")  # Red for delete
+        else:
+            # Disable delete confirmation mode (back to normal)
+            elements["delete_button"].display = True
+            elements["delete_cancel_button"].display = False
+            elements["delete_confirm_button"].display = False
+            elements["row"].styles.border = ("round", "#80B3FF")  # Blue for normal
 
 class WebsiteItem(Static):
     def __init__(self, website, *args, **kwargs):
@@ -254,9 +285,9 @@ class DashboardView(Screen):
             if cred.id not in current_credential_ids:
                 details.mount(CredentialItem(
                     credential_id=cred.id,
-                    username=cred.username,
-                    password=cred.password,
-                    savedLink=cred.saved_link,
+                    username=cred.decrypted_username,
+                    password=cred.decrypted_password,
+                    savedLink=cred.decrypted_saved_link,
                     url=self.selected_website.url if self.selected_website else ""
                 ))
 

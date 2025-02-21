@@ -10,9 +10,9 @@ class CredentialRepository:
 
     def create(self, credential: Credential) -> Credential:
         self.cursor.execute('''
-            INSERT INTO credentials (website_id, username, password, saved_link)
-            VALUES (?, ?, ?, ?)
-        ''', (credential.website_id, credential.username, credential.password, credential.saved_link))
+            INSERT INTO credentials (website_id, username, password, saved_link, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (credential.website_id, credential.username, credential.password, credential.saved_link, credential.created_at, credential.updated_at))
 
         self.conn.commit()
         credential.id = self.cursor.lastrowid
@@ -34,8 +34,8 @@ class CredentialRepository:
                 password=row[3],
                 saved_link=row[4],
                 notes=None,
-                created_at=datetime.now(),  # Replace with actual timestamps if available in DB
-                updated_at=datetime.now()  # Replace with actual timestamps if available in DB
+                created_at=datetime.now(),
+                updated_at=datetime.now()
             )
         return None
 

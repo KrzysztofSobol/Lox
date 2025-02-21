@@ -5,7 +5,7 @@ import subprocess
 import tkinter.messagebox as messagebox
 import tkinter as tk
 
-from containerService.container import Container
+from utils.DependencyInjector import Injector
 from viewsGUI.mainView import MainScreen
 
 
@@ -57,7 +57,7 @@ class LoginScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
-        self.userController = Container.getUserController()
+        self.userController = Injector.getUserController()
         self.is_register_mode = False  # Track current mode
 
         # Create a background label to hold the image
