@@ -30,9 +30,13 @@ class UserController:
             'wrapped_encryption_key': wrapped_encryption_key
         }
 
+        # set the encryption key
         from utils.DependencyInjector import Injector
         credential_controller = Injector.getCredentialController()
+        website_controller = Injector.getWebsiteController()
+
         credential_controller.set_encryption_key(encryption_key)
+        website_controller.set_encryption_key(encryption_key)
 
         return self.userRepository.createUser(user_data)
 
@@ -58,6 +62,9 @@ class UserController:
         # set the encryption key
         from utils.DependencyInjector import Injector
         credential_controller = Injector.getCredentialController()
+        website_controller = Injector.getWebsiteController()
+
         credential_controller.set_encryption_key(encryption_key)
+        website_controller.set_encryption_key(encryption_key)
 
         return user

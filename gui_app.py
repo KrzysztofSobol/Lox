@@ -10,7 +10,7 @@ class App(ctk.CTk):
 
         # Window setup
         self.geometry("720x480")
-        self.title("PasswordManager")
+        self.title("Lox")
         self.resizable(True, True)
 
         # Configure grid for the main window

@@ -53,7 +53,9 @@ class Injector:
     @classmethod
     def getWebsiteController(cls):
         return cls.getInstance('website_controller',
-                               lambda: WebsiteController(cls.getWebsiteRepository()))
+                               lambda: WebsiteController(
+                                   cls.getWebsiteRepository(),
+                                   encryption_key=None))
 
     @classmethod
     def getCredentialController(cls):

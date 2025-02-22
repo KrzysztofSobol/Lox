@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 from models.CredentialModel import Credential
 from utils.CryptoUtils import encrypt, decrypt
 
@@ -18,17 +17,19 @@ class CredentialController:
         websites = self.websiteController.get_user_websites(user_id)
         website = next((w for w in websites if w.name == normalized_url), None)
 
+        encrypted_normalized_url = encrypt(normalized_url, self.encryption_key)
+        encrypted_url = encrypt(url, self.encryption_key)
+
         if not website:
             website = self.websiteController.create_website(
                 user_id=user_id,
-                name=normalized_url,
-                url=normalized_url
+                name=encrypted_normalized_url,
+                url=encrypted_url
             )
 
         # encrypt the data provided by a user using the master's key
         encrypted_password = encrypt(password, self.encryption_key)
         encrypted_username = encrypt(username, self.encryption_key)
-        encrypted_url = encrypt(url, self.encryption_key)
 
         credential = Credential(
             id=None,
@@ -58,7 +59,7 @@ class CredentialController:
     def delete(self, credential_id: int) -> bool:
         return self.credentialRepository.delete(credential_id)
 
-    def getCredentialsByWebsite(self, website_id: int) -> List[Credential]:
+    def getCredentialsByWebsite(self, website_id: int) -> list[Credential]:
         credentials = self.credentialRepository.get_all_by_website_id(website_id)
 
         for credential in credentials:
