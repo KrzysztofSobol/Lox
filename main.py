@@ -4,9 +4,18 @@ import os
 import psutil
 import time
 
+def get_resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 def read_mode_from_file():
     try:
-        with open('mode.txt', 'r') as file:
+        mode_path = get_resource_path('mode.txt')
+        with open(mode_path, 'r') as file:
             mode = file.read().strip().lower()
         return mode == 'true'
     except FileNotFoundError:
@@ -15,10 +24,9 @@ def read_mode_from_file():
         return True
 
 def close_console_window():
-    for proc in psutil.process_iter(['name', 'exe']):
+    for proc in psutil.process_iter(['name']):
         try:
-            exe_path = proc.info.get('exe')
-            if exe_path and 'python.exe' in exe_path and 'console_app.py' in exe_path:
+            if proc.info['name'] == 'your_app_name.exe':
                 proc.terminate()
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
@@ -27,16 +35,12 @@ def main():
     is_gui_mode = read_mode_from_file()
 
     if is_gui_mode:
-        # Launch gui_app.py using python
-        subprocess.Popen([sys.executable, 'gui_app.py'], creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
+        from gui_app import main as gui_main
+        gui_main()
     else:
-        # Launch console_app.py using python
-        subprocess.Popen([sys.executable, 'console_app.py'], creationflags=subprocess.CREATE_NEW_CONSOLE)
-
-    close_console_window()
-
-    if not is_gui_mode:
-        close_console_window()
+        from console_app import ModesApp
+        app = ModesApp()
+        app.run()
 
     sys.exit(0)
 

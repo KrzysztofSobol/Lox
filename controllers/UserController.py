@@ -29,6 +29,11 @@ class UserController:
             'salt': base64.b64encode(salt).decode('utf-8'),
             'wrapped_encryption_key': wrapped_encryption_key
         }
+
+        from utils.DependencyInjector import Injector
+        credential_controller = Injector.getCredentialController()
+        credential_controller.set_encryption_key(encryption_key)
+
         return self.userRepository.createUser(user_data)
 
     def authenticateUser(self, username: str, password: str):
