@@ -1,5 +1,4 @@
 from textual.app import App
-
 from viewsConsole.addView import AddView
 from viewsConsole.dashboardView import DashboardView
 from viewsConsole.loginView import LoginView

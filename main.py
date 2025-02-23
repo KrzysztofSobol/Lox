@@ -1,47 +1,33 @@
 import subprocess
 import sys
 import os
-import psutil
 import time
-
-def get_resource_path(relative_path):
-    try:
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
-
-    return os.path.join(base_path, relative_path)
 
 def read_mode_from_file():
     try:
-        mode_path = get_resource_path('mode.txt')
-        with open(mode_path, 'r') as file:
+        with open('mode.txt', 'r') as file:
             mode = file.read().strip().lower()
         return mode == 'true'
     except FileNotFoundError:
-        return True
+        return True  # Default to GUI mode if file doesn't exist
     except Exception as e:
+        print(f"Error reading mode file: {e}")
         return True
-
-def close_console_window():
-    for proc in psutil.process_iter(['name']):
-        try:
-            if proc.info['name'] == 'your_app_name.exe':
-                proc.terminate()
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            pass
 
 def main():
     is_gui_mode = read_mode_from_file()
 
     if is_gui_mode:
-        from gui_app import main as gui_main
-        gui_main()
+        # Launch gui_app.py (CustomTkinter) in a new process, detached from the console
+        subprocess.Popen([sys.executable, 'gui_app.py'],
+                        creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
     else:
-        from console_app import ModesApp
-        app = ModesApp()
-        app.run()
+        # Launch console_app.py (Textual) in a new console window
+        subprocess.Popen([sys.executable, 'console_app.py'],
+                        creationflags=subprocess.CREATE_NEW_CONSOLE)
 
+    # mall delay for the new process to start before exiting
+    time.sleep(0.5)
     sys.exit(0)
 
 if __name__ == "__main__":

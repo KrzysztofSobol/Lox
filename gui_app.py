@@ -1,4 +1,4 @@
-import tkinter as tk  # Add this import
+import tkinter as tk
 import customtkinter as ctk
 from viewsGUI.loginView import LoginScreen
 from viewsGUI.mainView import MainScreen
@@ -10,7 +10,7 @@ class App(ctk.CTk):
 
         # Window setup
         self.geometry("720x480")
-        self.title("Lox")
+        self.title("PasswordManager")
         self.resizable(True, True)
 
         # Configure grid for the main window
@@ -29,7 +29,7 @@ class App(ctk.CTk):
         self.frames = {}
 
         # Create screens
-        for F in (LoginScreen, MainScreen, AddView):  # Add AddView here
+        for F in (LoginScreen, MainScreen, AddView):
             frame = F(self.container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -50,8 +50,6 @@ class App(ctk.CTk):
 def main():
     ctk.set_appearance_mode("system")
     ctk.set_default_color_theme("blue")
-
-
     app = App()
     app.mainloop()
 
