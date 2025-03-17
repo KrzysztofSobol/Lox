@@ -40,13 +40,13 @@ A free and open-source password manager — simple, yet powerful. Built with Pyt
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/password-manager.git
+git clone https://github.com/KrzysztofSobol/password-manager.git
 ```
 
 2. Navigate to the project directory:
 
 ```bash
-cd password-manager
+cd Lox
 ```
 
 3. Install dependencies:
