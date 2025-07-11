@@ -214,9 +214,6 @@ class LoginView(Screen):
     color = reactive("white")
     CSS_PATH = "../tcss/login.tcss"
 
-    async def async_restart(self):
-        ModeController.restart_application()
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.userController = Injector.getUserController()
