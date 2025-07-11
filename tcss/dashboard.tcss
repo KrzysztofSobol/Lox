@@ -172,6 +172,7 @@
     dock: right;
     background: #F9D923;
     border: none;
+    color: black;
 }
 
 #edit-confirm-credential-button {
@@ -193,6 +194,7 @@
     background: #EB5353;
     border: none;
     display: block;
+    color: white;
 }
 
 #delete-cancel-credential-button {
