@@ -10,7 +10,6 @@ from database.database import init_db
 from repositories.UserRepository import UserRepository
 from viewsConsole.dashboardView import DashboardView
 from utils.DependencyInjector import Injector
-from utils.ModeController import ModeController
 
 class LoginView:
     pass
@@ -223,19 +222,8 @@ class LoginView(Screen):
         self.userController = Injector.getUserController()
 
     def compose(self) -> ComposeResult:
-        # Keep the existing composition, but update the mode-related elements
         with Vertical(classes="box"):
-            yield Button("Mode", id="mode-button")
-            with Vertical(id="mode-container"):
-                option_list = OptionList(
-                    "Console Mode",
-                    "GUI Mode"
-                )
-                option_list.border_title = "Select Mode"
-                yield option_list
-                with Horizontal(id="mode-button-container"):
-                    yield Button("Save and reset", id="save-reset-mode", classes="saveButtons")
-                    yield Button("Save", id="save-mode", classes="saveButtons")
+            yield Static()
         with Vertical(classes="box loginBox"):
             yield LockDisplay(id="lock")
             with Vertical(id="login-container"):
@@ -296,7 +284,7 @@ class LoginView(Screen):
             lock.animation_frame = 0
             self.add_class("register")
             lrButton.label = "Register"
-            self.query_one("#goToRegister-text").update(renderable="Go back to login?")
+            self.query_one("#goToRegister-text").update("Go back to login?")
 
         # Logic for returning to login mode
         elif event.button.id == "goToLogin-button":
@@ -305,7 +293,7 @@ class LoginView(Screen):
             lock.animation_frame = 0
             self.remove_class("register")
             lrButton.label = "Login"
-            self.query_one("#goToRegister-text").update(renderable="Don't have an account?")
+            self.query_one("#goToRegister-text").update("Don't have an account?")
 
         elif event.button.id == "login-button":
             username = self.query_one("#login-input", Input).value
@@ -350,7 +338,6 @@ class LoginView(Screen):
             if highlighted_index is not None:
                 selected_mode = option_list.get_option_at_index(highlighted_index).prompt
                 mode_value = "true" if selected_mode == "GUI Mode" else "false"
-                ModeController.save_mode(mode_value)
                 self.query_one("#mode-container").styles.visibility = "hidden"
 
                 if event.button.id == "save-reset-mode":

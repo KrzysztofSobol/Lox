@@ -265,7 +265,7 @@ class DashboardView(Screen):
 
         if not credentials:
             credentialsPlaceholder.styles.display = "block"
-            credentialsPlaceholder.update(renderable="No credentials found for this website")
+            credentialsPlaceholder.update("No credentials found for this website")
             details.styles.display = "none"
             rightPane.styles.align = ("center", "middle")
             return
