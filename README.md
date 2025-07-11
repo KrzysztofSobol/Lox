@@ -10,7 +10,7 @@ A free and open-source password manager — simple, yet powerful. Built with Pyt
 - 📝 Editable credentials
 - 🗑️ Deletion of credentials
 - 🖥️ CLI interface built with the Textual library
-- 🖼️ GUI version available (experimental, minor bugs)
+- 🖼️ GUI version (discontinued)
 
 ---
 
@@ -26,7 +26,7 @@ A free and open-source password manager — simple, yet powerful. Built with Pyt
 ## 🖥️ Interface
 
 - **CLI Version (Recommended)**: Built with the Textual library for smooth terminal-based interaction.
-- **GUI Version (Experimental)**: Contains minor bugs and is currently unoptimized.
+- **GUI Version (discontinued)**: Contains minor bugs and is currently unoptimized.
 
 ---
 
