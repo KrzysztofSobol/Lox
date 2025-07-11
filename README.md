@@ -37,29 +37,7 @@ A free and open-source password manager — simple, yet powerful. Built with Pyt
 
 ## 🔑 Usage
 
-1. Clone the repository:
-
-```bash
-git clone https://github.com/KrzysztofSobol/password-manager.git
-```
-
-2. Navigate to the project directory:
-
-```bash
-cd Lox
-```
-
-3. Install dependencies:
-
-```bash
-pip install [needed_libraries]
-```
-
-4. Run the application:
-
-```bash
-python main.py
-```
+Simply download the latest release and run the PasswordManager.exe
 
 ---
 
