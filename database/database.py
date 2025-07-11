@@ -1,8 +1,17 @@
 import sqlite3
+import os
+import sys
 
-# Initialize database
+def get_db_path():
+    if getattr(sys, 'frozen', False):
+        base_path = os.path.dirname(sys.executable)
+        return os.path.join(base_path, 'password_manager.db')
+    else:
+        return 'password_manager.db'
+
 def init_db():
-    conn = sqlite3.connect('password_manager.db')
+    db_path = get_db_path()
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     # Users table

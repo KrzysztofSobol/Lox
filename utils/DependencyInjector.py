@@ -14,8 +14,7 @@ class Injector:
     @classmethod
     def initialize(cls):
         if not cls._initialized:
-                cls._instances['db_connection'] = init_db()
-                cls._initialized = True
+            cls._initialized = True
 
     @classmethod
     def getInstance(cls, key: str, creator_func):
