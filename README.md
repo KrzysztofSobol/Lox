@@ -6,9 +6,7 @@ A free and open-source password manager — simple, yet powerful. Built with Pyt
 
 - 🔐 Secure encryption of credentials using a master key
 - 🗂️ Organize credentials by websites
-- 🛡️ Encryption and decryption of usernames and passwords
 - 📝 Editable credentials
-- 🗑️ Deletion of credentials
 - 🖥️ CLI interface built with the Textual library
 - 🖼️ GUI version (discontinued)
 
