@@ -8,7 +8,8 @@ shutil.rmtree('build', ignore_errors=True)
 PyInstaller.__main__.run([
     'console_app.py',
     '--onefile',
-    '--name=PasswordManager',
+    '--name=Lox',
+    '--icon=icon.ico',
     '--add-data=tcss;tcss',
     '--hidden-import=sqlite3',
     '--clean'
