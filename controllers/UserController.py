@@ -1,6 +1,6 @@
 import os
 import base64
-import hashlib
+import bcrypt
 from repositories.UserRepository import UserRepository
 from utils.CryptoUtils import derive_key, encrypt, decrypt
 
@@ -21,11 +21,11 @@ class UserController:
         derived_key = derive_key(password, salt)
         encryption_key = os.urandom(32)
         wrapped_encryption_key = encrypt(base64.b64encode(encryption_key).decode('utf-8'), derived_key)
-        password_hash = hashlib.sha256(password.encode()).hexdigest()
+        password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12))
 
         user_data = {
             'username': username,
-            'password_hash': password_hash,
+            'password_hash': password_hash.decode('utf-8'),
             'salt': base64.b64encode(salt).decode('utf-8'),
             'wrapped_encryption_key': wrapped_encryption_key
         }
@@ -45,8 +45,7 @@ class UserController:
         if user is None:
             return 1  # User not found
 
-        provided_hash = hashlib.sha256(password.encode()).hexdigest()
-        if provided_hash != user.password_hash:
+        if not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
             return 2  # Incorrect password
 
         salt = base64.b64decode(user.salt)
